@@ -1,6 +1,17 @@
 <!DOCTYPE html> 
 <html lang=en>
 	<head>
+	
+		<!-- Google Tag Manager -->
+		<script>
+			(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+			})(window,document,'script','dataLayer','GTM-TVML74S');
+		</script>
+		<!-- End Google Tag Manager -->
+
 		<style>
 			body {
 			margin: 0 auto;
@@ -72,370 +83,23 @@
 
 		</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-	<script language="JavaScript">
-		var implicitUri = "https://api.incontact.com/InContactAuthorizationServer/Authenticate";
-		var client_id = "DeveloperPortalAccess@OATAPI";
-		var token_scope = "AdminApi AgentApi";
-		var redirect_uri = "https://olivat.no-ip.com/nic/index.htm";
-		var state_object = "myState";
-	
-		function RedirectToAuthPage() {
-			var url = implicitUri;
-			url = url + "?state=" + state_object;
-			url = url + "&response_type=token";
-			url = url + "&client_id=" + encodeURIComponent(client_id);
-			url = url + "&redirect_uri=" + encodeURIComponent(redirect_uri);
-			//alert(url);
-			url = url + "&scope=" + encodeURIComponent(token_scope);
-			window.location.href = url;
-		}
-	
-		function getParameterByName(param){
-			var vars = {};
-			window.location.href.replace( location.hash, '' ).replace( 
-				/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
-				function( m, key, value ) { // callback
-					vars[key] = value !== undefined ? value : '';
-				}
-			);
-			if ( param ) {
-				return vars[param] ? vars[param] : null;	
-			}
-			return vars;
-		}
-	
-		function getAgents() {
-			var accessToken=decodeURIComponent(getParameterByName("access_token"));
-			var baseURI=decodeURIComponent(getParameterByName("resource_server_base_uri"));
-			getAgentsPayload = {
-				'updatedSince': '',
-				'isActive': 'true',
-				'searchString': '',
-				'fields': '',
-				'skip': '',
-				'top': '',
-				'orderBy': 'firstName'
-			}
-			$.ajax({
-				//The baseURI variable is created by the result.resource_server_base_uri,
-				//which is returned when getting a token and should be used to create the URL base
-				'url': baseURI + 'services/v12.1/agents',
-				'type': 'GET',
-				'headers': {
-					//Use access_token previously retrieved from inContact token service
-					'Authorization': 'bearer ' + accessToken,
-					'content-Type': 'application/x-www-form-urlencoded'
-				},
-				'data': getAgentsPayload,
-				'success': function (result, status, statusCode) {
-					//Process success actions
-					//alert("test="+result.agents[3].lastName);
-					//alert("test="+result.agents.length);
-					var select = document.getElementById ("nom");
-					for (i=0;i<result.agents.length;i++) {
-						select.options[select.options.length] = new Option (result.agents[i].firstName +" "+ result.agents[i].lastName, result.agents[i].agentId);
-				   }
-					return result;
-				},
-				'error': function (XMLHttpRequest, textStatus, errorThrown) {
-					//Process error actions
-					alert("GetAgents - "+textStatus+" - "+errorThrown);
-					return false;
-				}
-			});
-		}
 
-		function getSkills() {
-			var accessToken=decodeURIComponent(getParameterByName("access_token"));
-			var baseURI=decodeURIComponent(getParameterByName("resource_server_base_uri"));
-			var getSkillsPayload = {
-				'updatedSince': '',
-				'mediaTypeId': 4,
-				'outboundStrategy': 'Manual',
-				'isActive': 'true',
-				'searchString': 'OAT',
-				'fields': '',
-				'skip': '',
-				'top': '',
-				'orderBy': 'skillName'
-			}
-			$.ajax({
-				//The baseURI variable is created by the result.resource_server_base_uri,
-				//which is returned when getting a token and should be used to create the URL base
-				'url': baseURI + 'services/v12.0/skills',
-				'type': 'GET',
-				'headers': {
-					//Use access_token previously retrieved from inContact token service
-					'Authorization': 'bearer ' + accessToken,
-					'content-Type': 'application/x-www-form-urlencoded'
-				},
-				'data': getSkillsPayload,
-				'success': function (result, status, statusCode) {
-					//Process success actions
-					//alert("2");
-					var select = document.getElementById ("skills");
-					for (i=0;i<result.skills.length;i++) {
-						select.options[select.options.length] = new Option (result.skills[i].skillName, result.skills[i].skillId);
-				   }
-					return result;
-				},
-				'error': function (XMLHttpRequest, textStatus, errorThrown) {
-					alert("GetSkills - "+textStatus+" - "+errorThrown);
-					//Process error actions
-					return false;
-				}
-			});
-		}
-	
-		function getSkillScheduledCallbacks(skillId) {
-			var accessToken=decodeURIComponent(getParameterByName("access_token"));
-			var baseURI=decodeURIComponent(getParameterByName("resource_server_base_uri"));
-			$.ajax({
-				//The baseURI variable is created by the result.resource_server_base_uri,
-				//which is returned when getting a token and should be used to create the URL base
-				'url': baseURI + 'services/v12.0/skills/' + skillId + '/scheduled-callbacks',
-				'type': 'GET',
-				'headers': {
-					//Use access_token previously retrieved from inContact token service
-					'Authorization': 'bearer ' + accessToken,
-					'content-Type': 'application/x-www-form-urlencoded'
-				},
-				'success': function (result, status, statusCode) {
-					//Process success actions
-					var select = document.getElementById ("callbacks");
-					for (i=0;i<result.callbacks.length;i++) {
-						select.options[select.options.length] = new Option (result.callbacks[i].callbackTime+"/"+result.callbacks[i].dialNumber+"/"+result.callbacks[i].firstName+" "+result.callbacks[i].lastName+" "+result.callbacks[i].notes, result.callbacks[i].callbackId);
-				   }
-					return result;
-				},
-				'error': function (XMLHttpRequest, textStatus, errorThrown) {
-					//Process error actions
-					alert("getSkillScheduledCallbacks - "+textStatus+" - "+errorThrown);
-					return false;
-				}
-			});
-
-
-			function deleteScheduledCallback(callbackId) {
-				var accessToken=decodeURIComponent(getParameterByName("access_token"));
-				var baseURI=decodeURIComponent(getParameterByName("resource_server_base_uri"));
-				$.ajax({
-					//The baseURI variable is created by the result.resource_server_base_uri,
-					//which is returned when getting a token and should be used to create the URL base
-					'url': baseURI + 'services/v12.0/scheduled-callbacks/' + callbackId,
-					'type': 'DELETE',
-					'headers': {
-						//Use access_token previously retrieved from inContact token service
-						'Authorization': 'bearer ' + accessToken,
-						'content-Type': 'application/x-www-form-urlencoded'
-					},
-					'success': function (result, status, statusCode) {
-						//Process success actions
-						alert("Schedule has been cancelled!");
-						return result;
-					},
-					'error': function (XMLHttpRequest, textStatus, errorThrown) {
-						//Process error actions
-						alert("deleteScheduledCallback - "+textStatus+" - "+errorThrown);
-						return false;
-					}
-				});
-}
-	}
-
-
-	</script>	
 
 	<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-	<title>CXone external controls</title>
+	<title>CXone demo site Page 1</title>
 	</head>
-	<body onload=init()>
+	<body>
 
-		<script language="JavaScript">
-		// retreive token information
-		if (getParameterByName("access_token") != null){
-			//GetagentbyAgentID("2628271","");
-			getSkills();
-			getAgents();
-		}
-		slide=null;
-		s=null;
-		// function called page loads
-		function init(){
-			slide1=document.getElementById("slider1"); // get a reference to the slider element
-			slide1.addEventListener("change",handler,false);//add a listener to the slider
-			s1=document.getElementById("bpo1"); // get a reference to the text box
-			s1.value = slide1.value;// set the text box value to the slider value
-			
-			slide2=document.getElementById("slider2"); // get a reference to the slider element
-			slide2.addEventListener("change",handler,false);//add a listener to the slider
-			s2=document.getElementById("bpo2"); // get a reference to the text box
-			s2.value = slide2.value;// set the text box value to the slider value
-			
-			slide3=document.getElementById("slider3"); // get a reference to the slider element
-			slide3.addEventListener("change",handler,false);//add a listener to the slider
-			s3=document.getElementById("bpo3"); // get a reference to the text box
-			s3.value = slide3.value;// set the text box value to the slider value
-			
-			slide4=document.getElementById("slider4"); // get a reference to the slider element
-			slide4.addEventListener("change",handler,false);//add a listener to the slider
-			s4=document.getElementById("bpo4"); // get a reference to the text box
-			s4.value = slide4.value;// set the text box value to the slider value
+	<h1>Demo CXone Core Chat Page 1</h1>
+	
+	<p><a href="index_chat_core1.htm">Let's go to page 2</a></p>
 
-			if (getCookie("cxoneBPO1").length>0) {
-				document.getElementById("slider1").value=getCookie("cxoneBPO1");
-				document.getElementById("bpo1").value=getCookie("cxoneBPO1");
-				document.getElementById("slider2").value=getCookie("cxoneBPO2");
-				document.getElementById("bpo2").value=getCookie("cxoneBPO2");
-				document.getElementById("slider3").value=getCookie("cxoneBPO3");
-				document.getElementById("bpo3").value=getCookie("cxoneBPO3");
-				document.getElementById("slider4").value=getCookie("cxoneBPO4");
-				document.getElementById("bpo4").value=getCookie("cxoneBPO4");
-			}
-		}
-		//function that is called when there is a change on the slider
-		function handler(){
-			s1.value = slide1.value;//set the text box value to the slider current value
-			s2.value = slide2.value;//set the text box value to the slider current value
-			s3.value = slide3.value;//set the text box value to the slider current value
-			s4.value = slide4.value;//set the text box value to the slider current value
-			var myTotalInt= new Number(document.f1.bpo1.value);
-			myTotalInt+=new Number(document.f1.bpo2.value);
-			myTotalInt+=new Number(document.f1.bpo3.value);
-			myTotalInt+=new Number(document.f1.bpo4.value);
-			document.getElementById("div2").innerHTML="("+myTotalInt+"%)";
-		}
-		
-		function updateCxone(){
-			//save values into cookies
-			createCookie("cxoneBPO1",document.f1.bpo1.value,200);
-			createCookie("cxoneBPO2",document.f1.bpo2.value,200);
-			createCookie("cxoneBPO3",document.f1.bpo3.value,200);
-			createCookie("cxoneBPO4",document.f1.bpo4.value,200);
-			// Check if total=100%
-			var myTotal= new Number(document.f1.bpo1.value);
-			myTotal+=new Number(document.f1.bpo2.value);
-			myTotal+=new Number(document.f1.bpo3.value);
-			myTotal+=new Number(document.f1.bpo4.value);
-			//alert(myTotal);
-			if (myTotal!=100){
-				alert("Total for all BPO has to be 100%, please change the values!");
-			}else{
-				myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_createfile_from_external_requests&bus_no=4594685&scriptId=25724143&skill_no=442358&p1="+document.f1.bpo1.value+"&p2="+document.f1.bpo2.value+"&p3="+document.f1.bpo3.value+"&p4="+document.f1.bpo4.value+"&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
-				document.getElementById('inlineFrame1').src=myURL;
-				//document.getElementById('div1').innerHTML="<a href='"+myURL+"'>"+myURL+"</a>";
-			}
-		}
-		function updateCxone2(myData){
-			myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_switch_agent_to_available&bus_no=4594685&scriptId=25724195&skill_no=442358&p1="+myData+"&p2=&p3=&p4=&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
-			document.getElementById('inlineFrame1').src=myURL;
-		}
 
-		function createCookie(name,value,days) {
-			if (days) {
-				var date = new Date();
-				date.setTime(date.getTime()+(days*24*60*60*1000));
-				var expires = "; expires="+date.toGMTString();
-			}
-			else var expires = "";
-			document.cookie = name+"="+value+expires+"; path=/";
-		}
-
-		function readCookie(name) {
-			var nameEQ = name + "=";
-			var ca = document.cookie.split(';');
-			for(var i=0;i < ca.length;i++) {
-				var c = ca[i];
-				while (c.charAt(0)==' ') c = c.substring(1,c.length);
-				if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-			}
-			return null;
-		}
-
-		function getCookie(sName) {
-				var cookContent = document.cookie, cookEnd, i, j;
-				var sName = sName + "=";
-		
-				for (i=0, c=cookContent.length; i<c; i++) {
-						j = i + sName.length;
-						if (cookContent.substring(i, j) == sName) {
-								cookEnd = cookContent.indexOf(";", j);
-								if (cookEnd == -1) {
-										cookEnd = cookContent.length;
-								}
-								return decodeURIComponent(cookContent.substring(j, cookEnd));
-						}
-				}       
-				return null;
-		}
-		</script>
-
-		<form id=f1 name=f1>
-		<P align=center><input type=button id=b1 name=b1 value="Log you in to retreive the lists from CXone, based on your security prolile" onclick="javascript:RedirectToAuthPage();"></P>
-		<P>
-		<table align=center>
-			<tr>
-				<th colspan="3" bgcolor="#f4f4f4"><H2>Callcenter Manager Cockpit</H2></th>
-			</tr>
-			<tr>
-				<td rowspan=4><div class="tooltip">Percentage based routing settings<span class="tooltiptext">Change are real time...</span></div><P><div id=div2 name=div2 align=center></div></P></td>
-				<td><label for="slider1">Sitel</label><input id=slider1 type = range autofocus min = 0 max = 100 step = 5 Value="5" list="tickmarks">&nbsp;<input type=text id=bpo1 name=bpo1 width=3 size=3 readonly>%</td>
-				<td rowspan=4><input type=button id=b1 name=b1 value=Update onclick="javascript:updateCxone();"></td>
-			</tr>
-			<tr>
-				<td><label for="slider2">Teleperformance</label><input id=slider2 type = range autofocus min = 0 max = 100 step = 5 Value="5" list="tickmarks">&nbsp;<input type=text id=bpo2 name=bpo2 width=3 size=3 readonly>%</td>
-			</tr>
-			<tr>
-				<td><label for="slider3">Armatis</label><input id=slider3 type = range autofocus min = 0 max = 100 step = 5 Value="5" list="tickmarks">&nbsp;<input type=text id=bpo3 name=bpo3 width=3 size=3 readonly>%</td>
-			</tr>
-			<tr>
-				<td><label for="slider4">Arvato</label><input id=slider4 type = range autofocus min = 0 max = 100 step = 5 Value="85" list="tickmarks">&nbsp;<input type=text id=bpo4 name=bpo4 width=3 size=3 readonly>%</td>
-			</tr>
-			<tr>
-				<td><div class="tooltip">Switch agent to Available state<span class="tooltiptext">Agent is going to be notified first by a message on MAX...</span></div></td>
-				<td>
-					<SELECT name="nom" id="nom" size="1" onchange="javascript:document.f1.agent.value=(document.getElementById('nom').options[document.getElementById('nom').selectedIndex].value);"><OPTION>Select an agent..    </SELECT>
-						&nbsp;AgentID:&nbsp;<input type=text id=agent name=agent width=10 size=10 value="2628271">
-				</td>
-				<td><input type=button id=b2 name=b2 value=Update onclick="javascript:updateCxone2(document.f1.agent.value);"></td>
-			</tr>
-			<tr>
-				<td>Manage callback..</td>
-				<td>
-					<SELECT name="skills" id="skills" size="1" onchange="javascript:document.f1.skill.value=(document.getElementById('skills').options[document.getElementById('skills').selectedIndex].value);"><OPTION>Select a skill..    </SELECT>
-						&nbsp;SkillID:&nbsp;<input type=text id=skill name=skill width=10 size=10 value="4006841">
-					<SELECT name="callbacks" id="callbacks" size="1" onchange="javascript:document.f1.CallbackID.value=(document.getElementById('callbacks').options[document.getElementById('callbacks').selectedIndex].value);"><OPTION>Select a callback..</SELECT>
-						&nbsp;CallbackID:&nbsp;<input type=text id=CallbackID name=CallbackID width=10 size=10 value="">
-				</td>
-				<td><input type=button id=b2 name=b2 value=Update onclick="javascript:getSkillScheduledCallbacks(document.f1.skill.value);">
-					&nbsp;<input type=button id=b3 name=b3 value=x onclick="javascript:deleteScheduledCallback(document.f1.CallbackID.value);">
-				</td>
-			</tr>
-			<tr>
-				<td>Spawned script result</td>
-				<td colspan="3"><iframe id="inlineFrame1" name="inlineFrame1" title="myResult" width="100%" height="50" src=""></iframe></td>
-			</tr>
-		</table>
-
-		<datalist id="tickmarks">
-		<option value="0" label="0%">
-		<option value="10">
-		<option value="20">
-		<option value="30">
-		<option value="40">
-		<option value="50" label="50%">
-		<option value="60">
-		<option value="70">
-		<option value="80">
-		<option value="90">
-		<option value="100" label="100%">
-		</datalist>
-
-		</P>
-		<div id=div1 name=div1></div>
-		
-		</form>
+	<script type = "text/javascript" src = 'https://home-b32.nice-incontact.com/inContact/ChatClient/js/embed.min.js'></script>
+	<script type ="text/javascript">
+	icPatronChat.init({serverHost:'https://home-b32.nice-incontact.com',bus_no:4597359,poc:'e511867e-9d75-4b75-91d0-8c16f2ac5c67',params:['FirstName','Last Name','first.last@company.com',555-555-5555]});
+	</script>
 		
 	</body>
 	</html>
