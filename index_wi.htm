@@ -83,10 +83,12 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
 	<script language="JavaScript">
 		function createWI(){
-			myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=CharlVanDenBerg\\SPAWNED\\IBSpawnWI&bus_no=4597359&scriptId=168268431&skill_no=10574092&p1="+encodeURIComponent(document.getElementById('myID').value)+"&p2="+encodeURIComponent(document.getElementById('myName').value)+"&p3="+encodeURIComponent(document.getElementById('mySegm').value)+"&p4=https://www.telekom.com/en&p5=492151548433&p6=10574092&p7=20055687&p8=var8&p9=var9&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
+//			myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=CharlVanDenBerg\\SPAWNED\\IBSpawnWI&bus_no=4597359&scriptId=168268431&skill_no=10574092&p1="+encodeURIComponent(document.getElementById('myID').value)+"&p2="+encodeURIComponent(document.getElementById('myName').value)+"&p3="+encodeURIComponent(document.getElementById('mySegm').value)+"&p4=https://www.telekom.com/en&p5=492151548433&p6=10574092&p7=20055687&p8=var8&p9=var9&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
 			//alert(myURL);
 			//myURL="https://www.nice.com";
+			myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\SPAWNED\\OAT_WI_FROM_WEB&bus_no=4597359&scriptId=216159622&skill_no=20723694&p1="+encodeURIComponent(document.getElementById('WorkItemID').value)+"&p2="+encodeURIComponent(document.getElementById('WorkItemPayload').value)+"&p3="+encodeURIComponent(document.getElementById('WorkItemType').value)+"&p4="+encodeURIComponent(document.getElementById('WorkItemFrom').value)+"&p5="+encodeURIComponent(document.getElementById('WorkItemPointOfContact').value)+"&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
 			document.getElementById('inlineFrame1').src=myURL;
+			
 		}
 	</script>	
 
@@ -102,16 +104,24 @@
 		<div id=myDiv name=myDiv style = "position:relative; left:480px; top:200px;">
 			<table style="border:1px solid black;">
 				<tr>
-					<td>ID:</td>
-					<td><input type="text" name=myID id=myID value="98273498"></td>
+					<td>WorkItemID:</td>
+					<td><input type="text" name=WorkItemID id=WorkItemID value=""></td>
 				</tr>
 				<tr>
-					<td>Name:</td>
-					<td><input type="text" name=myName id=myName value="John Williams"></td>
+					<td>WorkItemPayload:</td>
+					<td><input type="text" name=WorkItemPayload id=WorkItemPayload value=""></td>
 				</tr>
 				<tr>
-					<td>Segmentation:</td>
-					<td><input type="text" name=mySegm id=mySegm value="GOLD"></td>
+					<td>WorkItemType:</td>
+					<td><input type="text" name=WorkItemType id=WorkItemType value=""></td>
+				</tr>
+				<tr>
+					<td>WorkItemFrom:</td>
+					<td><input type="text" name=WorkItemFrom id=WorkItemFrom value=""></td>
+				</tr>
+				<tr>
+					<td>WorkItemPointOfContact:</td>
+					<td><input type="text" name=WorkItemPointOfContact id=WorkItemPointOfContact value=""></td>
 				</tr>
 				<tr>
 					<td><iframe id="inlineFrame1" name="inlineFrame1" title="myResult" width="0" height="0" src=""></iframe></td>
