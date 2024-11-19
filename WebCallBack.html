@@ -1,0 +1,109 @@
+<!DOCTYPE html> 
+<html lang=en>
+	<head>
+ 		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi"/>
+	<title>WebCallBack</title>
+	</head>
+	<body>
+		<script language="JavaScript">
+			function updateCxone(myname,myphonenum,myskill){
+				if(myskill!="0"){
+					//myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_createfile_from_external_requests&bus_no=4594685&scriptId=25724143&skill_no=442358&p1="+document.f1.bpo1.value+"&p2="+document.f1.bpo2.value+"&p3="+document.f1.bpo3.value+"&p4="+document.f1.bpo4.value+"&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
+					myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_callback_advanced&bus_no=4594685&scriptId=26115238&skill_no=4101920&p1=1&p2="+encodeURIComponent(myphonenum)+"&p3="+encodeURIComponent(myname)+"&p4="+myskill+"&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
+					document.getElementById('inlineFrame1').src=myURL;
+					//document.getElementById('div1').innerHTML="<a href='"+myURL+"'>"+myURL+"</a>";
+					//alert($_GET('name'));
+				}else{
+					alert("Please select a skill!");
+				}
+			}
+			function $_GET(param) {
+				var vars = {};
+				window.location.href.replace( location.hash, '' ).replace( 
+					/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+					function( m, key, value ) { // callback
+						vars[key] = value !== undefined ? value : '';
+					}
+				);
+
+				if ( param ) {
+					return vars[param] ? vars[param] : null;	
+				}
+				return vars;
+			}
+		</script>
+
+		<form id=f1 name=f1>
+		<P>
+		<table align=center>
+			<tr>
+				<td>Name</td>
+				<td><input type=text id=myname name=myname width=15 size=15 value="Michel MICHU"></td>
+			</tr>
+			<tr>
+				<td>Phone number</td>
+				<td><input type=text id=myphonenum name=myphonenum width=15 size=15 value="+33660171322"></td>
+			</tr>
+			<tr>
+				<td>Skill</td>
+				<td>
+					<select id="myskill" name="myskill">
+					    <option value="0">--Please choose an option--</option>
+					    <option value="4101921">OAT_IB_PROG1_A_FR</option>
+					    <option value="4101920">OAT_IB_PROG1_B_EN</option>
+					</select>
+				</td>
+				<td><input type=button id=b2 name=b2 value="Call me!" onclick="javascript:updateCxone(document.f1.myname.value,document.f1.myphonenum.value,document.getElementById('myskill').options[document.getElementById('myskill').selectedIndex].value);"></td>
+			</tr>
+		</table>
+
+		</P>
+
+		<iframe id="inlineFrame1" name="inlineFrame1" title="myResult" width="100%" height="50" src="" style="visibility:hidden;"></iframe>
+		
+		<div id=div1 name=div1></div>
+		
+		</form>
+		
+		
+		<form id=f2 name=f2 action="mailto:oatdemo1@incontactemail.com?subject=2628271" method="post" enctype="text/plain">
+		<P>
+		<table align=center>
+			<tr>
+				<td>Name</td>
+				<td><input type=text id=myname name=myname width=15 size=15 value="Michel MICHU"></td>
+			</tr>
+			<tr>
+				<td>Email</td>
+				<td><input type=text id=myemail name=myemail width=15 size=15 value="olivier.attia@niceincontact.com"></td>
+			</tr>
+			<tr>
+				<td>Skill</td>
+				<td>
+					<select id="myskill2" name="myskill2">
+					    <option value="0">--Please choose an option--</option>
+					    <option value="4101921">OAT_IB_PROG1_A_FR</option>
+					    <option value="4101920">OAT_IB_PROG1_B_EN</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>My message</td>
+				<td>
+				<textarea id="mymessage" name="mymessage" rows="5" cols="33">It was a dark and stormy night...</textarea>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td><input type=submit id=s1 name=s1 value="Send email"></td>
+			</tr>
+		</table>
+
+		</P>
+		
+		</form>
+		
+		
+	</body>
+	</html>
