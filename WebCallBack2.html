@@ -78,9 +78,9 @@
 	</head>
 	<body>
 		<script language="JavaScript">
-			function updateCxone(myname,myphonenum,myskill){
-					myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_callback_advanced&bus_no=4594685&scriptId=26115238&skill_no=4101920&p1=1&p2="+encodeURIComponent(myphonenum)+"&p3="+encodeURIComponent(myname)+"&p4="+myskill+"&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
-					myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\SPAWNED\\OAT_COMMITMENT&bus_no=4597359&scriptId=254053538&skill_no=4134502&p1=Jacques&p2=MOREL&p3=+33660171322&p4=16/12/2024&p5=10:15&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb
+			function updateCxone(myFirstName, myLastName, myPhoneNum, myDate, myTime, myNote){
+					//myURL="https://home-b2.incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier%20ATTIA\\Spawned\\OAT_callback_advanced&bus_no=4594685&scriptId=26115238&skill_no=4101920&p1=1&p2="+encodeURIComponent(myphonenum)+"&p3="+encodeURIComponent(myname)+"&p4="+myskill+"&p5=&Guid=32e0c6c6-a9e0-46bd-8ccd-2baf577b3fdc";
+					myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\SPAWNED\\OAT_COMMITMENT&bus_no=4597359&scriptId=254053538&skill_no=4134502&p1="+encodeURIComponent(myFirstName)+"&p2="+encodeURIComponent(myLastName)+"&p3="+encodeURIComponent(myPhoneNum)+"&p4="+encodeURIComponent(myDate)+"&p5="+encodeURIComponent(myTime)+"&p6="+encodeURIComponent(myNote)+"&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
 					document.getElementById('inlineFrame1').src=myURL;
 			}
 			function $_GET(param) {
@@ -104,15 +104,15 @@
 		<table align=center>
 			<tr>
 				<td>First name</td>
-				<td><input type=text id=myname name=myname width=15 size=15 value="Jacques"></td>
+				<td><input type=text id=myFirstName name=myFirstName width=15 size=15 value="Jacques"></td>
 			</tr>
 			<tr>
 				<td>Last name</td>
-				<td><input type=text id=mylastname name=mylastname width=15 size=15 value="MOREL"></td>
+				<td><input type=text id=myLastName name=myLastName width=15 size=15 value="MOREL"></td>
 			</tr>
 			<tr>
 				<td>Phone number</td>
-				<td><input type=text id=myphonenum name=myphonenum width=15 size=15 value="+33660171322"></td>
+				<td><input type=text id=myPhoneNum name=myPhoneNum width=15 size=15 value="+33660171322"></td>
 			</tr>
 			<tr>
 				<td>Date</td>
@@ -125,12 +125,12 @@
 			<tr>
 				<td>Note</td>
 				<td>
-				<textarea id="mymessage" name="mymessage" rows="5" cols="33">Request for quotation...</textarea>
+				<textarea id=myNote name=myNote rows="5" cols="33">Request for quotation...</textarea>
 				</td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
-				<td><input type=submit id=s1 name=s1 value="Send email"></td>
+				<td><input type=button id=s1 name=s1 value="Send commitment!" onclick="javascript:updateCxone(document.f1.myname.value,document.f1.myphonenum.value,document.getElementById('myskill').options[document.getElementById('myskill').selectedIndex].value);"></td>
 			</tr>
 		</table>
 
