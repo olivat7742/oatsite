@@ -81,57 +81,20 @@
 
 		</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-	<script language="JavaScript">
 
-		function openChat()
-		{
-			//alert("Demo");
-			brandembassy('openChatWindow');
-		}
-		
-		function CloseChat()
-		{
-			//alert("Demo");
-			brandembassy('closeWindow');
-		}
+	<script>
+		(function(n,u){
+		window.BrandEmbassy=n,
+		window[n]=window[n]||function(){(window[n].q=window[n].q||[]).push(arguments)},window[n].u=u,
+		e=document.createElement("script"),e.async=1,e.src=u+"?"+Math.round(Date.now()/1e3/3600),
+		document.head.appendChild(e)
+		})('brandembassy','https://livechat-static-de-na1.niceincontact.com/4/chat.js');
 
-		function UpdateIsAuthCustomField(myValue)
-		{
-			brandembassy('setCustomerCustomField', 'authenticated', myValue);
-			brandembassy('setCaseCustomField', 'isauth', myValue);
-			alert("Update done!");
-		}
-
-		function TrigWFARule1(myValue)
-		{
-			//brandembassy('setVisitorEvent', 'trig1', myValue);
-			//brandembassy('executeTrigger', 'b2d2fd5a-f2b6-4d75-a34c-eb0847f52c13');
-			brandembassy('executeTrigger', '0d2b49a3-d19e-438f-842b-82c4ff59566d');
-			alert('WFA called!');
-		}
-
-		(
-			function (i, s, o, r, g, v, a, m) 
-			{
-				g = v ? g + '?v=' + v : g;
-				i['BrandEmbassy'] = r;
-				i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) };
-				i[r].l = +new Date();
-				a = s.createElement(o);
-				m = s.getElementsByTagName(o)[0];
-				a.async = 1;
-				a.src = g + '?' + Math.round(Date.now() / 1000 / 3600);
-				m.parentNode.insertBefore(a, m)
-			}
-		)
-		(window, document, 'script', 'brandembassy', 'https://livechat-static-de-na1.niceincontact.com/4/chat.js');
-		brandembassy('setWindowWidth', '100%');
-		brandembassy('setWindowHeight', '100%');
+		brandembassy('init', 1092, 'chat_59c7d06a-45b7-4d20-af45-c395d7b84ef9');
 		brandembassy('chat','setWindowWidth', '100%');
 		brandembassy('chat','setWindowHeight', '100%');
-		brandembassy('init', 1092, 'chat_59c7d06a-45b7-4d20-af45-c395d7b84ef9');
-		//brandembassy('setCustomerId', 'chat_5b678a9d-f1f6-4a93-abce-92467a598c45');
-		//brandembassy('setCustomerId', '7f2b0f85-c83d-4d32-bd80-3d9d730c1af1');
+		brandembassy('setWindowWidth', '100%');
+		brandembassy('setWindowHeight', '100%');
 		brandembassy('setCustomerName', 'Jacques MOREL');
 		brandembassy('hidePreSurvey');
 		brandembassy('enableChatAlwaysOnline');
@@ -139,8 +102,7 @@
 		brandembassy('hideFirstSentMessage', true);
 		brandembassy('autoStartSession');
 		brandembassy('openChatWindow');
-
-	</script>	
+	</script>
 
  	<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
