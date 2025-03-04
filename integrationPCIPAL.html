@@ -3,19 +3,19 @@
 	</head>
 <body>
 
-<iframe name="PCIPal" width="500px" height="650px"></iframe>
+<iframe name="pciPal" width="500px" height="650px"></iframe>
 
 </body>
 <script>
 
 	const searchParams = new URLSearchParams(window.location.search);
 
-	var sessionId = searchParams.get('sessionId');//"b94e205a-a027-4a8f-9092-de0362ff8fbf";
-	var tenantId = searchParams.get('tenantId'); //"903";
-	var region =  searchParams.get('region'); //"euwest2";
-	var iframeUrl =  searchParams.get('iframeUrl'); //"https://" + region + ".pcipal.cloud/session/" + tenantId +"/view/" + sessionId + "/framed";
-	var accessToken = searchParams.get('accessToken');  //"eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ijc1MTgiLCJyb2xlIjoiYXBwbGljYXRpb24iLCJ0ZW5hbnRJZCI6IjMxOSIsInRlbmFudE5hbWUiOiJQQ0kgUGFsIFRlc3QgSW50ZWdyYXRpb24iLCJkaXNwbGF5TmFtZSI6IllvdWkgVXNlciIsInVzZXJOYW1lIjoiWW91aV91c2VyIiwiZW1haWwiOiJ0b20ubmljaG9sbHNAcGNpcGFsLmNvbSIsImVtYWlsQ29uZmlybWVkIjp0cnVlLCJmb3JjZVBhc3N3b3JkUmVzZXQiOmZhbHNlLCJsYW5ndWFnZSI6ImVuLUdCIiwiYXV0aGVudGljYXRpb25JZCI6IjQyMjg5ZGMzZDk2ZDRhODJiMzhhMDVmZjQ1Nzg2NDNlIiwidGVuYW50UGVybWlzc2lvbnMiOiJ7XCJJc0FkbWluXCI6ZmFsc2UsXCJJc0Zsb3dBZG1pblwiOmZhbHNlLFwiSXNVc2VyQWRtaW5cIjpmYWxzZSxcIklzU3VwcG9ydFwiOmZhbHNlLFwiSXNSZXBvcnRpbmdcIjpmYWxzZSxcIkhhc0FueUVsZXZhdGVkUGVybWlzc2lvbnNcIjpmYWxzZX0iLCJncm91cE1lbWJlcnNoaXAiOiJbMTU3NF0iLCJuYmYiOjE3MzAzOTQyNjQsImV4cCI6MTczMDM5NDU2NCwiaXNzIjoicGNpcGFsc3RhZ2luZy5jbG91ZCIsImF1ZCI6InBjaXBhbHN0YWdpbmcuY2xvdWQifQ.OuG62fOpyUD1poAmvkbn3aB_lsGFPehKW0NMlf_sdoNDqU6MknvDHXaxezaWQQSx"
-	var refreshToken =  searchParams.get('refreshToken'); //"c15aa0b8d67c45bf97c3ecb5a7e952cf";
+	var sessionId = searchParams.get('sessionId');
+	var tenantId = searchParams.get('tenantId');
+	var region =  searchParams.get('region');
+	var iframeUrl =  searchParams.get('iframeUrl');
+	var accessToken = searchParams.get('accessToken');
+	var refreshToken =  searchParams.get('refreshToken');
 
 	var form = document.createElement('form'); 
 	form.setAttribute('action', iframeUrl); 
