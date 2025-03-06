@@ -80,7 +80,8 @@
 		<script language="JavaScript">
 			function updateCxone(myFirstName, myLastName, myPhoneNum, myNote){
 					myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\SPAWNED\\OAT_CALLBACK3&bus_no=4597359&scriptId=255448121&skill_no=10636420&p1="+encodeURIComponent(myFirstName)+"&p2="+encodeURIComponent(myLastName)+"&p3="+encodeURIComponent(myPhoneNum)+"&p4="+encodeURIComponent(myNote)+"&p5=1&p6="+encodeURIComponent(myDateTime)+"&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
-					document.getElementById('inlineFrame1').src=myURL;
+					alert(myURL);
+					//document.getElementById('inlineFrame1').src=myURL;
 			}
 			function $_GET(param) {
 				var vars = {};
