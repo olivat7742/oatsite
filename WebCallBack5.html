@@ -74,14 +74,14 @@
 
 		</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
-	<title>WebCallBack V7</title>
+	<title>WebCallBack_V5 - OAT_CALLBACK3</title>
 	</head>
 	<body>
 		<script language="JavaScript">
-			function updateCxone(myFirstName, myLastName, myPhoneNum, myNote){
+			function updateCxone(myFirstName, myLastName, myPhoneNum, myNote, myDateTime){
 					myURL="https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\SPAWNED\\OAT_CALLBACK3&bus_no=4597359&scriptId=255448121&skill_no=10636420&p1="+encodeURIComponent(myFirstName)+"&p2="+encodeURIComponent(myLastName)+"&p3="+encodeURIComponent(myPhoneNum)+"&p4="+encodeURIComponent(myNote)+"&p5=1&p6="+encodeURIComponent(myDateTime)+"&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
-					alert(myURL);
-					//document.getElementById('inlineFrame1').src=myURL;
+					//alert(myURL);
+					document.getElementById('inlineFrame1').src=myURL;
 			}
 			function $_GET(param) {
 				var vars = {};
@@ -126,7 +126,7 @@
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
-				<td><input type=button id=s1 name=s1 value="Send commitment!" onclick="javascript:updateCxone(document.f1.myFirstName.value,document.f1.myLastName.value,document.f1.myPhoneNum.value,document.f1.myNote.value);"></td>
+				<td><input type=button id=s1 name=s1 value="Send commitment!" onclick="javascript:updateCxone(document.f1.myFirstName.value,document.f1.myLastName.value,document.f1.myPhoneNum.value,document.f1.myNote.value,document.f1.myDateTime.value);"></td>
 			</tr>
 		</table>
 
