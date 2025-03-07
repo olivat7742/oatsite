@@ -139,42 +139,9 @@
 		</form>		
 
 		<script language="JavaScript">
-			//const dateActuelle = new Date();
-			//dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
-			//const updatedDate = dateActuelle.toISOString();
-			
-			
 			const dateActuelle = new Date();
 			dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
-
-			// Obtenir la date en timezone Romance (Europe/Paris)
-			const options = {
-				timeZone: 'Europe/Paris',
-				year: 'numeric',
-				month: '2-digit',
-				day: '2-digit',
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false
-			};
-
-			// Formatter la date pour l'affichage
-			const dateRomance = new Intl.DateTimeFormat('fr-CA', options).format(dateActuelle);
-
-			// Extraire les composants (YYYY-MM-DD et HH:MM:SS)
-			const [date, time] = dateRomance.split(' ');
-
-			// Déterminer le décalage horaire en minutes et le convertir en format ±HH:MM
-			const offsetMinutes = -dateActuelle.getTimezoneOffset();
-			const offsetHours = String(Math.floor(offsetMinutes / 60)).padStart(2, '0');
-			const offsetMins = String(offsetMinutes % 60).padStart(2, '0');
-			const offsetSign = offsetMinutes >= 0 ? '+' : '-';
-
-			// Construire la date au format ISO 8601
-			const updatedDate = `${date}T${time}.000${offsetSign}${offsetHours}:${offsetMins}`;
-
-			// Assigner la valeur au champ myDateTime dans le formulaire f1
+			const updatedDate = dateActuelle.toISOString();
 			document.f1.myDateTime.value = updatedDate;
 		</script>
 		
