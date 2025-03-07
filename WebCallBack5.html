@@ -161,7 +161,7 @@
 			// Convertir au format ISO 8601 personnalisé
 			const [date, time] = dateParis.split(', ');
 			const [day, month, year] = date.split('/');
-			const isoDateParis = "${year}-${month}-${day}T${time.replace(':', '-').replace(':', '-')}.000+01:00";
+			const isoDateParis = `${year}-${month}-${day}T${time.replace(':', '-').replace(':', '-')}.000+01:00`;
 			document.f1.myDateTime.value=isoDateParis;
 		</script>
 		
