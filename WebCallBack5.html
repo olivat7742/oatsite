@@ -142,11 +142,12 @@
 			//const dateActuelle = new Date();
 			//dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
 			//const updatedDate = dateActuelle.toISOString();
-
+			
+			
 			const dateActuelle = new Date();
-			// Ajoute 2 minutes
 			dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
-			// Obtenir le décalage horaire en millisecondes pour Paris
+
+			// Obtenir la date en timezone Romance (Europe/Paris)
 			const options = {
 				timeZone: 'Europe/Paris',
 				year: 'numeric',
@@ -157,23 +158,24 @@
 				second: '2-digit',
 				hour12: false
 			};
-			// Formater la date dans le fuseau horaire de Paris
-			const formatter = new Intl.DateTimeFormat('fr-CA', options);
-			const dateParis = formatter.format(dateActuelle);
-			// Extraire les composants de la date et de l'heure
-			const [date, time] = dateParis.split(' ');
-			const [year, month, day] = date.split('-');
-			const [hour, minute, second] = time.split(':');
-			// Détecter dynamiquement le décalage horaire pour Paris
+
+			// Formatter la date pour l'affichage
+			const dateRomance = new Intl.DateTimeFormat('fr-CA', options).format(dateActuelle);
+
+			// Extraire les composants (YYYY-MM-DD et HH:MM:SS)
+			const [date, time] = dateRomance.split(' ');
+
+			// Déterminer le décalage horaire en minutes et le convertir en format ±HH:MM
 			const offsetMinutes = -dateActuelle.getTimezoneOffset();
 			const offsetHours = String(Math.floor(offsetMinutes / 60)).padStart(2, '0');
 			const offsetMins = String(offsetMinutes % 60).padStart(2, '0');
 			const offsetSign = offsetMinutes >= 0 ? '+' : '-';
-			// Construire la date au format ISO 8601 avec le fuseau horaire de Paris
-			const isoDateParis = `${year}-${month}-${day}T${hour}:${minute}:${second}.000${offsetSign}${offsetHours}:${offsetMins}`;
-			//console.log(isoDateParis);
 
-			document.f1.myDateTime.value=isoDateParis;
+			// Construire la date au format ISO 8601
+			const updatedDate = `${date}T${time}.000${offsetSign}${offsetHours}:${offsetMins}`;
+
+			// Assigner la valeur au champ myDateTime dans le formulaire f1
+			document.f1.myDateTime.value = updatedDate;
 		</script>
 		
 	</body>
