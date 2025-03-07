@@ -139,10 +139,35 @@
 		</form>		
 
 		<script language="JavaScript">
+			//const dateActuelle = new Date();
+			//dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
+			//const updatedDate = dateActuelle.toISOString();
 			const dateActuelle = new Date();
+
+			// Ajoute 2 minutes
 			dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
-			const updatedDate = dateActuelle.toISOString();
-			document.f1.myDateTime.value=updatedDate;
+
+			// Obtenir la date en fuseau horaire de Paris
+			const options = {
+				timeZone: 'Europe/Paris',
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				fractionalSecondDigits: 3
+			};
+
+			const dateParis = new Intl.DateTimeFormat('fr-FR', options).format(dateActuelle);
+
+			// Convertir au format ISO 8601 personnalisé
+			const [date, time] = dateParis.split(', ');
+			const [day, month, year] = date.split('/');
+			const isoDateParis = `${year}-${month}-${day}T${time.replace(':', '-').replace(':', '-')}.000+01:00`;
+
+			//console.log(isoDateParis);
+			document.f1.myDateTime.value=isoDateParis;
 		</script>
 		
 	</body>
