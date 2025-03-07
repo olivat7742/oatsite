@@ -137,6 +137,13 @@
 		<div id=div1 name=div1></div>
 		
 		</form>		
+
+		<script language="JavaScript">
+			const dateActuelle = new Date();
+			dateActuelle.setMinutes(dateActuelle.getMinutes() + 2);
+			const updatedDate = dateActuelle.toISOString();
+			document.f1.myDateTime.value=updatedDate;
+		</script>
 		
 	</body>
 	</html>
