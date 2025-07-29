@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Styled Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0A2D82;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header img {
+            height: 40px;
+            vertical-align: middle;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 45%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            text-align: left;
+            background-color: #D3D62E;
+            color: #0A2D82;
+        }
+        input[type="submit"] {
+            background-color: #0A2D82;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        input[type="submit"]:hover {
+            background-color: #D3D62E;
+            color: #0A2D82;
+        }
+    </style>
+</head>
+<body>
+
+<p>DEMO SFDC Chat</p>
+
+<script type='text/javascript' src='https://c.la4-c2-ia7.salesforceliveagent.com/content/g/js/64.0/deployment.js'></script>
+<script type='text/javascript'>
+liveagent.init('https://d.la4-c2-ia7.salesforceliveagent.com/chat', '5721J000000fxTn', '00Do0000000HAoK');
+</script>
+
+<p>Please wait for the chat to start...</p>
+
+</body>
+</html>
