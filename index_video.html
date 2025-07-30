@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NiCE Video channel demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0A2D82;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header img {
+            height: 40px;
+            vertical-align: middle;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 45%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            text-align: left;
+            background-color: #D3D62E;
+            color: #0A2D82;
+        }
+        input[type="submit"] {
+            background-color: #0A2D82;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        input[type="submit"]:hover {
+            background-color: #D3D62E;
+            color: #0A2D82;
+        }
+    </style>
+</head>
+<body>
+
+<p>NiCE Mpower - Start a video...</p>
+<p><span class="mt-font-arial" style="font-size: 1rem;">Click below to video chat with one of our Experts!</span></p>
+<p>
+  <script>
+    /*<![CDATA[*/
+            var showVideoChatButton = false;
+            var nicBusNumber = '4597359';
+            var nicChatPOC = '65ba4a41-146d-43c9-bf1e-248d72083502';
+            var clusterNiC = 'b32';
+            var surflyWidgetKey = '134f5fd2ac8842c0a1cd6062818eee74';
+            var videoSignalerURL = "https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Surfly_Signaler&bus_no=4597359&scriptId=253044286&skill_no=4135765&p1=&p2=&p3=&p4=&p5=&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
+            var randomIdNice = '';
+            let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
+    
+            var chatSrc = document.createElement("script");
+            chatSrc.src = NicHomeURL + "/inContact/ChatClient/js/embed.min.js";
+    
+            var head = document.getElementsByTagName("head")[0];
+            head.appendChild(chatSrc);
+    
+            chatSrc.onload = function () {
+                (function (s, u, r, f, l, y) {
+                    s[f] = s[f] || { init: function () { s[f].q = arguments; } };
+                    l = u.createElement(r); y = u.getElementsByTagName(r)[0]; l.async = 1;
+                    l.src = 'https://surfly.com/surfly.js'; y.parentNode.insertBefore(l, y);
+                })
+                    (window, document, 'script', 'Surfly');
+                loadSurfly();
+            };
+    
+    
+            function signalContact(contactId, followerLink, sessionPin, type) {
+                console.log('signal contact');
+                var url = new URL(chatSignalerURL);
+                url.searchParams.set('p1', contactId);
+                url.searchParams.set('p2', followerLink);
+                url.searchParams.set('p3', sessionPin);
+                url.searchParams.set('p4', type);
+                fetch(url);
+            }
+    
+            // 
+            function updateStudioScript(contactId, type) {
+                console.log('udpate Studio Script');
+                var url = new URL(chatSignalerURL);
+                url.searchParams.set('p1', contactId);
+                url.searchParams.set('p2', 'NA');
+                url.searchParams.set('p3', `sessionended-${type}`);
+                url.searchParams.set('p4', 'NA');
+                fetch(url);
+            }
+    
+            // Start a Work Item
+            function signalWorkItem(followerLink) {
+                randomId();
+                console.log('signal Work Item');
+                var url = new URL(videoSignalerURL);
+                url.searchParams.set('p1', 'startWorkItem');
+                url.searchParams.set('p2', followerLink);
+                url.searchParams.set('p3', randomIdNice);
+                fetch(url, { mode: "no-cors" });
+            }
+    
+            // End a workItem
+            function endWorkItem(followerLink) {
+                console.log('End Work Item', randomIdNice);
+                var url = new URL(videoSignalerURL);
+                url.searchParams.set('p1', 'endWorkItem');
+                url.searchParams.set('p2', followerLink);
+                url.searchParams.set('p3', randomIdNice);
+                fetch(url, { mode: "no-cors" });
+            }
+    
+            // Create Videochat Session
+            function createVideochatSession() {
+                var videochatSession = Surfly.session({
+                    block_until_agent_joins: false,
+                    hide_until_agent_joins: true,
+                    videochat_autostart: true,
+                    start_with_fullscreen_videochat: true,
+                    videochat_prompt: true,
+                    start_muted: false,
+                });
+    
+                var surflyMetadata = { "name": "Customer Kiosk", "email": "pedro@surfly.com" };
+    
+                videochatSession.on("session_created", function (session, event) {
+                    console.log('Waiting for confirmation');
+                    session.startLeader(null, surflyMetadata);
+                }).on("session_started", function (session, event) {
+                    var surflySessionPin = session.pin;
+                    var surflyFollowerLink = session.followerLink;
+                    signalWorkItem(surflyFollowerLink);
+                    console.log("Videochat session started");
+                    console.log('Session Pin: ' + surflySessionPin);
+                    // Display the Queue Spinner
+                    var spinner = document.querySelector("#spinner-container");
+                    spinner.classList.remove("hidden");
+    
+                    var cancelButton = document.querySelector("#btn-cancel-session");
+                    // If the Cancel button is clicked, end the work item and end the session
+                    cancelButton.addEventListener("click", function () {
+                        session.end();
+                    });
+    
+                    // Remove the button
+                    var button = document.querySelector("#start-button");
+                    button.classList.add("hidden");
+                }).on("viewer_joined", function (session, event) {
+                    window.nicVideochatContactId = event.userData.contactId;
+                }).on("session_ended", function (session, event) {
+                    console.log("Videochat session ended", event, session);
+    
+                    endWorkItem(session.followerLink);
+    
+                    // Remove the Queue Spinner
+                    var spinner = document.querySelector("#spinner-container");
+                    spinner.classList.add("hidden");
+                    // Add the button
+                    var button = document.querySelector("#start-button");
+                    button.classList.remove("hidden");
+                }).create();
+            };
+    
+            function loadSurfly() {
+                // Setup settings from API
+                var settings = {
+                    widget_key: surflyWidgetKey,
+                    auto_restore: false,
+                    session_start_confirmation: false,
+                    hidden: false,
+                    disable_end_redirect: true,
+                    require_password: false,
+                    agent_can_request_control: true,
+                    automated_session_recording_enabled: true,
+                    end_redirect_enabled: true,
+                };
+    
+                Surfly.init(settings, function (initResult) {
+                    if (initResult.success) {
+                        if (!Surfly.isInsideSession) {
+    
+                            if (localStorage.getItem(nicBusNumber + "-uniquePageId")) {
+                                console.log("random: " + localStorage.getItem(nicBusNumber + "-uniquePageId"));
+                            } else {
+                                let randomString = Math.random().toString(36).substring(7);
+                                let dateNow = Date.now();
+                                let uniquePageId = randomString + "-" + dateNow;
+    
+                                console.log("random: " + uniquePageId);
+    
+                                localStorage.setItem(nicBusNumber + "-uniquePageId", uniquePageId);
+                            }
+    
+                        }
+                    }
+                });
+            }
+    
+            function randomId() {
+                console.log('it got here');
+                let randomString = Math.random().toString(36).substring(7);
+                let dateNow = Date.now();
+                let uniquePageId = randomString + "-" + dateNow;
+                console.log("random ID for Nice: " + uniquePageId);
+                randomIdNice = uniquePageId;
+            }
+        /*]]>*/
+  </script>
+</p>
+<div class="container" id="start-button">
+  <h1 class="pageTitle">Click below to video chat with one of our Experts!</h1>
+  <div class="form-container">
+    <form id="contactForm" onsubmit="event.preventDefault();">
+      <div class="form-group"><input placeholder="Your Name" required="" type="text"></div>
+      <div class="form-group"><input id="email" name="email" placeholder="Your Email" required="" type="email"></div>
+      <div class="form-group"><select id="service" name="service" required="">
+          <option disabled="disabled" selected="selected" value="">Choose Service</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Mechanical">Mechanical</option>
+          <option value="Utility">Utility</option>
+        </select></div>
+    </form>
+  </div>
+  <div><button class="start-button" disabled="disabled" id="startVideoBtn" onclick="{createVideochatSession()}">Start Video</button></div>
+  <p class="mt-script-comment"></p>
+  <pre class="script" style="display: none;">template('MindTouch/Controls/PageOverview');</pre>
+  <pre class="script">wiki.idfTemplate();</pre>
+  <p>&nbsp;</p>
+</div>
+<div class="hidden" id="spinner-container">
+  <div id="spinner">
+    <div class="loader">&nbsp;</div>
+    <p class="text-queue">Wait! Someone NiCE will attend you soon!</p>
+    <p class="text-queue">In case you need to cancel, please click below</p>
+    <button class="cancel-button" id="btn-cancel-session">Cancel</button>
+  </div>
+</div>
+<p>
+  <script>
+    /*<![CDATA[*/
+            document.addEventListener('DOMContentLoaded', function () {
+                // Get form elements
+                const form = document.getElementById('contactForm');
+                const nameInput = document.getElementById('name');
+                const emailInput = document.getElementById('email');
+                const serviceSelect = document.getElementById('service');
+                const startVideoBtn = document.getElementById('startVideoBtn');
+    
+                // Function to validate email format
+                function isValidEmail(email) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                }
+    
+                // Function to check if all fields are valid
+                function validateForm() {
+                    const isNameFilled = nameInput.value.trim() !== '';
+                    const isEmailValid = isValidEmail(emailInput.value.trim());
+                    const isServiceSelected = serviceSelect.value !== '';
+    
+                    startVideoBtn.disabled = !(isNameFilled && isEmailValid && isServiceSelected);
+                }
+    
+                // Add event listeners to all form fields
+                nameInput.addEventListener('input', validateForm);
+                emailInput.addEventListener('input', validateForm);
+                serviceSelect.addEventListener('change', validateForm);
+            });
+        /*]]>*/
+  </script>
+</p>
+
+
+
+</body>
+</html>
