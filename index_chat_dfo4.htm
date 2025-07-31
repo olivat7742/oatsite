@@ -134,6 +134,50 @@
 		//brandembassy('setWindowHeight', '80%');
 		//brandembassy('executeTrigger', 'eda885b0-be49-42bf-bad1-8a04c6ba7818');
 
+		//****************************************
+		//To enable Surfly cobroswe integration
+		//****************************************
+		brandembassy('setAllowedExternalMessageTypes', ['MESSAGE_SENT', 'MESSAGE_RECEIVED']);
+		window.addEventListener("message", function (event) {
+			console.log(event, 'listener event');
+			// Ensure the data structure is as expected
+			if (event.data && event.data.actionType === "MESSAGE_RECEIVED") {
+				console.log(event.data.actionType, 'ACTION TYPE');
+				const messageContent = event.data.action.message;
+				// Check if the message content is "#COBROWSE#"
+				if (messageContent === "#COBROWSE#") {
+					console.log("Cobrowse message received:", event.data);
+					startCobrowse();
+					}
+			}
+		});
+		function startCobrowse() {
+			let customerWidgetKey = "6f6e69825c384b9b8edc238b1eed5ae6"; //set customer widget key to variable
+			window.parent.Surfly.settings.widget_key = customerWidgetKey; //set customer widget key to widget_key high level
+		  if (window.parent.Surfly.settings.widget_key === customerWidgetKey) {
+			// check if it worked to avoid null
+			console.log('widget key change correctly', customerWidgetKey);
+			Surfly.session().on(
+			  'session_created',
+			  function (session, event) {
+				console.log("Session created", session, event);
+				var surflySessionPin = session.pin;
+				console.log("Surfly session pin", surflySessionPin);
+				if (surflySessionPin) {
+				  console.log(document, 'document');
+				  //document.getElementsByName("reply-box")[0].value = surflySessionPin;
+				}
+			  }
+			).on('session_started', function (session, event) {
+			  console.log("Session started", session, event);
+
+			}).startLeader();
+		  }
+
+		}
+		//****************************************
+
+
 	</script>	
 
  	<meta charset="utf-8" />
