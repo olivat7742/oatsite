@@ -154,15 +154,14 @@
 			}
 		});
 		function startCobrowse() {
-			let customerWidgetKey = "6f6e69825c384b9b8edc238b1eed5ae6"; //set customer widget key to variable
+			let customerWidgetKey = "6f49d3e254784443b304e8f1c5fa3168"; //set customer widget key to variable
+			//let customerWidgetKey = "6f6e69825c384b9b8edc238b1eed5ae6"; //set customer widget key to variable
 			//let customerWidgetKey = "134f5fd2ac8842c0a1cd6062818eee74"; //set customer widget key to variable
 			window.parent.Surfly.settings.widget_key = customerWidgetKey; //set customer widget key to widget_key high level
 		  if (window.parent.Surfly.settings.widget_key === customerWidgetKey) {
 			// check if it worked to avoid null
 			console.log('widget key change correctly', customerWidgetKey);
-			Surfly.session().on(
-			  'session_created',
-			  function (session, event) {
+			Surfly.session().on('session_created', function (session, event) {
 				console.log("Session created", session, event);
 				var surflySessionPin = session.pin;
 				console.log("Surfly session pin", surflySessionPin);
