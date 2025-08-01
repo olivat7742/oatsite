@@ -145,7 +145,7 @@
 			// Ensure the data structure is as expected
 			if (event.data && event.data.actionType === "MESSAGE_RECEIVED") {
 				console.log(event.data.actionType, 'ACTION TYPE');
-				const messageContent = event.data.action.message;
+				const messageContent = event.data.action?.message;
 				// Check if the message content is "#COBROWSE#"
 				if (messageContent === "#COBROWSE#") {
 					console.log("Cobrowse message received:", event.data);
