@@ -13,7 +13,7 @@
         var nicChatPOC = '20cd8d38-cc6b-44f9-898a-b7a981303db3';
         var clusterNiC = 'b32';
         var surflyWidgetKey = '6f6e69825c384b9b8edc238b1eed5ae6';
-        var videoSignalerURL = "https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\DEMO\\GEN\\SURFLY\\Surfly_Signaler&bus_no=4597359&scriptId=312612936&skill_no=35575161&p1=&p2=&p3=&p4=&p5=&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
+        var videoSignalerURL = "https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Olivier_ATTIA\\DEMO\\GEN\\SURFLY\\Surfly_Signaler&bus_no=4597359&scriptId=312612936&skill_no=35575161&p1=&p2=&p3=&p4=&p5=&p6=&p7=&Guid=2f080976-b3a3-48d6-8346-862727f0cdeb";
         var randomIdNice = '';
         let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
 
@@ -41,6 +41,9 @@
             url.searchParams.set('p2', followerLink);
             url.searchParams.set('p3', sessionPin);
             url.searchParams.set('p4', type);
+			url.searchParams.set('p5', document.contactForm.name.value);
+			url.searchParams.set('p6', document.contactForm.email.value);
+			url.searchParams.set('p7', document.contactForm.service.options[document.contactForm.service.selectedIndex].value);
             fetch(url);
         }
 
@@ -52,6 +55,9 @@
             url.searchParams.set('p1', 'startWorkItem');
             url.searchParams.set('p2', followerLink);
             url.searchParams.set('p3', randomIdNice);
+			url.searchParams.set('p5', document.contactForm.name.value);
+			url.searchParams.set('p6', document.contactForm.email.value);
+			url.searchParams.set('p7', document.contactForm.service.options[document.contactForm.service.selectedIndex].value);
             fetch(url, { mode: "no-cors" });
         }
 
@@ -62,6 +68,9 @@
             url.searchParams.set('p1', 'endWorkItem');
             url.searchParams.set('p2', followerLink);
             url.searchParams.set('p3', randomIdNice);
+			url.searchParams.set('p5', document.contactForm.name.value);
+			url.searchParams.set('p6', document.contactForm.email.value);
+			url.searchParams.set('p7', document.contactForm.service.options[document.contactForm.service.selectedIndex].value);
             fetch(url, { mode: "no-cors" });
         }
 
@@ -182,7 +191,7 @@
     <div class="container" id="start-button">
         <h1 class="pageTitle">Connect with a Representative</h1>
         <div class="form-container">
-            <form id="contactForm" onsubmit="event.preventDefault();">
+            <form id="contactForm" name="contactForm" onsubmit="event.preventDefault();">
                 <div class="form-group">
                     <input type="text" id="name" name="name" placeholder="Your Name" required />
                 </div>
@@ -192,10 +201,10 @@
                 <div class="form-group">
                     <select id="service" name="service" required>
                         <option value="" disabled selected>How can we help?</option>
-                        <option value="ASL">Mortgages</option>
-                        <option value="English">Savings</option>
-                        <option value="Spanish">Checking</option>
-                        <option value="Dutch_test">Auto Loans</option>
+                        <option value="Mortgages">Mortgages</option>
+                        <option value="Savings">Savings</option>
+                        <option value="Checking">Checking</option>
+                        <option value="Auto_Loans">Auto Loans</option>
                     </select>
                 </div>
             </form>
@@ -213,6 +222,9 @@
             <button class="cancel-button" id="btn-cancel-session" onclick={cancelSession()}>Cancel</button>
         </div>
     </div>
+	
+	<!--input type=button value=Test id=b1 name=b1 onclick="javascript:alert(document.contactForm.service.options[document.contactForm.service.selectedIndex].value);"-->
+
 </body>
 <style>
     :root {
