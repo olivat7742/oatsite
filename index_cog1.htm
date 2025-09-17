@@ -71,38 +71,20 @@
 			}
 
 		</style>
-	<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"></script>
-
-	<script src="/sdk/app-page-sdk.js"></script>
-	<script data-form-example>
-	window.addEventListener("load", () => {
-		const form = document.querySelector('form');
-		form.onsubmit = e => {
-			e.preventDefault();
-			e.stopPropagation();
-			const formData = new FormData(form);
-			const values = [...formData.entries()].reduce((obj, [key, value]) => {
-				obj[key] = value;
-				return obj;
-			}, {});
-
-			SDK.submit(values);
-		};
-	});
-	</script>
-
 
  	<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 	<title>CXone demo site Cognigy...</title>
-	</head>
-	<body>
 
+	<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"></script>
 	<script>
 		initWebchat(
 			"https://endpoint-trial.cognigy.ai/c0491b273a5e3464e2ebc5e28f1e464add9d63b641fd78f46838855f5206e076"
 		);
 	</script>
+
+	</head>
+	<body>
 
 
 	<h1>Welcome to this Demo page...</h1>
