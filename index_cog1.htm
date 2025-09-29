@@ -76,19 +76,205 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 	<title>CXone Cognigy...</title>
 
-	<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"></script>
-	<script>
-		initWebchat(
-			"https://endpoint-trial.cognigy.ai/c0491b273a5e3464e2ebc5e28f1e464add9d63b641fd78f46838855f5206e076"
-		);
-	</script>
-
+	
 	</head>
 	<body>
 
 
+	<script src="../build/webchat3.js"></script>
+	<script>
+		function fetchConfig(url, callback) {
+			var request = new XMLHttpRequest();
+			request.open('GET', url, true);
+
+			request.onload = function () {
+				if (request.status >= 200 && request.status < 400) {
+					var data = JSON.parse(request.responseText);
+
+					callback(null, data)
+				} else {
+					callback('Could not parse json')
+				}
+			};
+
+			request.onerror = function () {
+				callback('Request failed')
+			};
+
+			request.send();
+		}
+
+		function loadScript(src, callback) {
+			var script = document.createElement('script');
+			script.setAttribute('src', src);
+
+			function handleLoad() {
+				callback(null);
+			}
+
+			script.onload = handleLoad;
+
+			document.body.appendChild(script);
+		}
+
+		function loadScripts(urls, callback) {
+			if (!urls || urls.length === 0)
+				return callback(null);
+
+			var loaded = 0;
+
+			function onLoad() {
+				loaded++;
+
+				if (loaded === urls.length)
+					callback(null)
+			}
+
+			urls.forEach(function (url) {
+				loadScript(url, onLoad);
+			});
+		}
+
+		var urlParameters = {}
+		window.location.search.slice(1).split("&")
+			.map(function (parameter) {
+				var key = parameter.substr(0, parameter.indexOf("="));
+				var value = parameter.substr(parameter.indexOf("=") + 1);
+				urlParameters[key] = decodeURI(value);
+			});
+
+		var options = {
+			channel: 'admin-webchat',
+			settings: {
+				embeddingConfiguration: {
+					useSessionStorage: true,
+					awaitEndpointConfig: true
+				},
+				unreadMessages: {
+					enableIndicator: true,
+					enableSound: true,
+					enablePreview: true,
+				},
+				behavior: {
+					focusInputAfterPostback: true,
+				},
+				widgetSettings: {
+					enableFocusTrap: true,
+				}
+			}
+		};
+
+		/** Get the user id from url parameters **/
+		if (urlParameters.userId) {
+			options.userId = urlParameters.userId;
+		} else if (urlParameters.user) {
+			// legacy fallback, as perviously we used "user"
+			options.userId = urlParameters.user;
+		}
+
+		/** Get the session id from url parameters **/
+		if (urlParameters.sessionId) {
+			options.sessionId = urlParameters.sessionId;
+		}
+
+
+		/**
+		 * If the forceWebsockets environment variable
+		 * is set to either "true" or "false",
+		 * then we override the setting. Otherwise
+		 * we use the default setting which will
+		 * e.g. set forceWebsockets to true if the
+		 * browser is IE11
+		 */
+		const forceWebsockets = "";
+
+		if (forceWebsockets === "true") {
+			options.forceWebsockets = true;
+		} else if (forceWebsockets === "false") {
+			options.forceWebsockets = false;
+		}
+
+		/** Get the endpoint base URL from the env */
+		var endpointBaseUrl = "https://endpoint-trial.cognigy.ai";
+
+		if (!endpointBaseUrl) {
+			throw new Error("Unable to load webchat since the correct environment variables are missing");
+		}
+
+		/*
+			The URL will look like:
+
+			webchat-dev.cognigy.com/v2/39bb9cf78a54827d4cffa7e17ca26c5e9e52a327ce2c37398e5e66b26bf24ca7
+
+			We need to extract the "token" which is the last part of the URL and looks like:
+			'39bb9cf78a54827d4cffa7e17ca26c5e9e52a327ce2c37398e5e66b26bf24ca7'
+		
+		*/
+
+		var components = window.location.pathname && window.location.pathname.split("/");
+		var token = components[components.length - 1];
+
+		var endpointConfigUrl = endpointBaseUrl + '/' + token;
+
+		var pluginUrls = [];
+
+		fetchConfig(endpointConfigUrl, function (err, config) {
+			if (err)
+				return;
+
+			var settings = config.settings;
+			var body = document.getElementsByTagName('body')[0];
+
+			// set background image
+			if (settings.demoWebchat.backgroundImageUrl) {
+				body.style.backgroundSize = 'cover';
+				body.style.backgroundPosition = 'center center';
+				body.style.backgroundImage = 'url("' + settings.demoWebchat.backgroundImageUrl + '")';
+			}
+
+			var isCenterWebchatLayout = settings.demoWebchat.position === "centered";
+
+			// center webchat
+			if (isCenterWebchatLayout) {
+				body.classList.add('center-webchat');
+			} else {
+				// button toggle
+				body.classList.add('bottom-webchat');
+			}
+
+			if (settings.pluginUrls) {
+				pluginUrls = pluginUrls.concat(settings.pluginUrls)
+			}
+
+			loadScripts(pluginUrls, function () {
+				initWebchat(endpointConfigUrl, options, function (webchat) {
+					window.cognigyWebchat = webchat;
+
+					webchat.registerAnalyticsService(function (event) {
+						if (event.type === 'webchat/close' && isCenterWebchatLayout) {
+							console.log('Webchat was closed. It will be re-opened soon.');
+							// Re-open the webchat in 500ms
+							setTimeout(function () {
+								webchat.open();
+							}, 500);							
+						}
+					});
+
+					if (isCenterWebchatLayout) {
+						webchat.open();
+					}
+				});
+			});
+		});
+	</script>
+
+
+
+
+
+
 	<h1>Welcome to this Demo page...</h1>
-	<h3>V2509171745</h3>
+	<h3>V2509291345</h3>
 	
 	
 	</body>
