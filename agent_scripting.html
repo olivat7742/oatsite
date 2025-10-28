@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<body>
+<style>body{font-family:Inter,Arial,Helvetica,sans-serif;margin:0;background:#f5f7fb}#app{display:flex;height:100vh}header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#fff;border-bottom:1px solid #e1e6ef}header img{height:28px;border-radius:4px}header .titles{font-size:12px;color:#334155}main{flex:1;display:flex;flex-direction:column;padding:18px;gap:12px}#flow{display:flex;gap:12px;align-items:flex-start}#left{flex:1;background:#fff;padding:14px;border-radius:8px;box-shadow:0 4px 18px rgba(15,23,42,0.06)}#scriptBox{padding:12px;border-radius:6px;background:#f8fafc;border:1px solid #e6eef8;margin-bottom:12px}#scriptBox .say{font-weight:600;margin-bottom:8px}#scriptBox .rec{background:#fff8db;padding:10px;border-radius:6px;border:1px dashed #f1d08a;color:#7a5c00}#controls{display:flex;gap:8px;flex-wrap:wrap}button{background:#0b5fff;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}button.ghost{background:#eef5ff;color:#0b5fff;border:1px solid #d6e4ff}.btn-secondary{background:#0f1724;padding:6px 10px}select,input,textarea{padding:8px;border-radius:6px;border:1px solid #d1d9e6}#right{width:320px;background:#0b1220;color:#fff;padding:14px;border-radius:8px;box-shadow:0 4px 18px rgba(2,6,23,0.45)}#summary{max-height:78vh;overflow:auto}#summary h3{margin:0 0 10px 0;font-size:13px}ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}li.summary-item{background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;cursor:pointer}li.summary-item small{display:block;color:#cbd5e1}footer{font-size:12px;color:#94a3b8;margin-top:6px} .step-buttons{display:flex;gap:8px;margin-top:8px} .choice{display:block;padding:10px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:8px;cursor:pointer} .choice.selected{background:#eef2ff;border-color:#c7d2fe} .muted{color:#64748b;font-size:13px} .note{background:#fff8db;padding:10px;border-radius:6px;border:1px dashed #f1d08a;color:#7a5c00;margin-top:8px} .hidden{display:none} .small{font-size:13px;color:#0f1724} .step-title{font-weight:700;margin-bottom:8px} .linkish{background:transparent;border:0;color:#a5b4fc;cursor:pointer;padding:0;text-decoration:underline} .danger{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}</style>
+
+<div id='app'>
+  <div style='flex:1;display:flex;flex-direction:column'>
+    <header>
+      <img src='https://konecta.com/images/konecta-share.jpg' alt='Konecta' />
+      <img src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2728%27><rect rx=%274%27 width=%2780%27 height=%2728%27 fill=%27%230b4f8a%27/><text x=%275%27 y=%2719%27 font-size=%2712%27 fill=%27%23fff%27 font-family=%27Arial%27>BanqueFictive</text></svg>' alt='Banque Fictive' />
+      <div class='titles'><div style='font-weight:700'>Olivier — Konecta, recouvrement</div><div style='opacity:.8'>Script guidé et options dynamiques</div></div>
+    </header>
+
+    <main>
+      <div id='flow'>
+        <div id='left'>
+          <div id='stepArea'></div>
+          <div style='display:flex;justify-content:space-between;align-items:center'>
+            <div class='muted'>Navigation rapide:</div>
+            <div class='step-buttons'>
+              <button id='btnPrev' class='ghost'>Retour</button>
+              <button id='btnNext'>Suivant</button>
+            </div>
+          </div>
+        </div>
+
+        <aside id='right'>
+          <div id='summary'>
+            <h3>Résumé progressif</h3>
+            <div id='summaryList'><small class='muted'>Les éléments choisis apparaissent ici. Cliquez pour revenir modifier.</small></div>
+          </div>
+          <footer>
+            <div class='small'>Agent: Olivier — Konecta / Département: Recouvrement</div>
+            <div class='small'>Situation: appel sortant de recouvrement (script recommandé)</div>
+          </footer>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+ var state={current:0,answers:{}}; var steps=[
+  {key:'intro',title:'Introduction',render:function(){return `<div><div class='step-title'>Introduction</div><div id='scriptBox' class='scriptBox'><div class='say'>Ce que vous dites (lisez mot à mot) :</div><div>Bonjour, je m'appelle Olivier, je vous appelle de Konecta, département recouvrement, pour la Banque Fictive. L'appel a pour objet le suivi d'un impayé rattaché à votre dossier. Est-ce un bon moment pour parler ?</div><div class='note'>Recommandation: si la personne n'est pas disponible, proposez un créneau de rappel et notez la préférence de contact.</div></div><div class='small'>Sélectionnez la suite :</div><div style='margin-top:8px'><button class='choice' data-step='intro' data-value='ok'>Oui, c'est un bon moment</button><button class='choice' data-step='intro' data-value='not_now'>Non, rappeler plus tard</button><button class='choice' data-step='intro' data-value='wrong_person'>C'est une erreur / Mauvais numéro</button></div></div>`}},
+  {key:'idv',title:'Vérification identité',render:function(){return `<div><div class='step-title'>Vérification d'identité</div><div id='scriptBox'><div class='say'>Ce que vous dites :</div><div>Pour des raisons de confidentialité, pouvez-vous me confirmer votre nom complet et votre date de naissance ?</div><div class='rec'>Recommandation: ne demandez jamais de données sensibles non nécessaires. Si la personne refuse, notez 'refus vérif' et suivez la procédure interne.</div></div><div style='margin-top:10px'><button class='choice' data-step='idv' data-value='confirmed'>Client confirmé</button><button class='choice' data-step='idv' data-value='partial'>Confirmation partielle</button><button class='choice' data-step='idv' data-value='refused'>Refuse de confirmer</button></div></div>`}},
+  {key:'balance',title:'Montant & motif appel',render:function(){return `<div><div class='step-title'>Objet: montant et statut</div><div id='scriptBox'><div class='say'>Ce que vous dites :</div><div>Notre système indique un solde impayé de <strong>XX,XX €</strong> lié à [type de produit]. Pouvez-vous confirmer si vous êtes au courant de ce montant ?</div><div class='note'>Recommandation: adaptez le 'type de produit' selon le dossier.</div></div><div style='margin-top:10px'><button class='choice' data-step='balance' data-value='aware'>Oui, je suis au courant</button><button class='choice' data-step='balance' data-value='no_aware'>Non, je ne suis pas au courant</button><button class='choice' data-step='balance' data-value='dispute'>Je conteste la dette</button></div></div>`}},
+  {key:'payment',title:'Proposition de règlement',render:function(){return `<div><div class='step-title'>Options de règlement</div><div id='scriptBox'><div class='say'>Ce que vous dites :</div><div>Nous pouvons procéder à différentes solutions: paiement intégral maintenant, échelonnement, ou étudier une contestation si vous pensez qu'il y a une erreur. Que souhaitez-vous faire aujourd'hui ?</div></div><div style='margin-top:10px'><button class='choice' data-step='payment' data-value='pay_now'>Payer maintenant</button><button class='choice' data-step='payment' data-value='arrange'>Mettre en place un échéancier</button><button class='choice' data-step='payment' data-value='partial'>Proposer un paiement partiel</button><button class='choice' data-step='payment' data-value='dispute'>Contester la dette</button></div></div>`}},
+  {key:'dispute',title:'Contestation — flux étendu',render:function(){return `<div><div class='step-title'>Contestation — étapes et script</div><div id='scriptBox'><div class='say'>Message d'accueil pour contestation :</div><div>Je comprends que vous souhaitez contester cette dette. Pour que nous traitions votre contestation, pouvez-vous me dire la raison principale ? (erreur de facturation, identité usurpée, déjà payé, pas ma dette, autre)</div><div class='rec'>Recommandation: Informer le client qu'il dispose de droits de contestation et que la demande sera enregistrée puis investiguée; éviter toute promesse de suppression immédiate.</div></div><div style='margin-top:10px'><button class='choice' data-step='dispute' data-value='erreur_facturation'>Erreur de facturation</button><button class='choice' data-step='dispute' data-value='identite_usurpee'>Identité usurpée</button><button class='choice' data-step='dispute' data-value='deja_paye'>Déjà payé</button><button class='choice' data-step='dispute' data-value='pas_ma_dette'>Pas ma dette</button><button class='choice' data-step='dispute' data-value='autre'>Autre</button></div><div id='disputeDetails' style='margin-top:12px'></div><div class='note' style='margin-top:12px'>Recommandation importante: si contestation pour 'identité usurpée', lancer immédiatement la procédure de fraude interne et placer un gel sur les actions de recouvrement jusqu'à clôture de l'enquête.</div></div>`}},
+  {key:'wrap',title:'Conclusion & suivi',render:function(){return `<div><div class='step-title'>Conclusion</div><div id='scriptBox'><div class='say'>Ce que vous dites :</div><div>Merci pour ces informations. Nous allons enregistrer votre demande et revenir vers vous sous 15 jours ouvrés. Préférez-vous être contacté par téléphone ou courriel ?</div><div class='rec'>Recommandation: si contestation, envoyer un accusé de réception écrit confirmant la réception et les étapes à suivre.</div></div><div style='margin-top:10px'><button class='choice' data-step='wrap' data-value='phone'>Par téléphone</button><button class='choice' data-step='wrap' data-value='email'>Par courriel</button></div></div>`}}
+ ];
+
+ var root=document.getElementById('stepArea'); var btnPrev=document.getElementById('btnPrev'); var btnNext=document.getElementById('btnNext'); var summaryList=document.getElementById('summaryList');
+
+ function renderStep(){
+  var s=steps[state.current]; root.innerHTML=s.render(); updateNav(); attachChoiceHandlers(); renderDisputeDetails(); renderSummary();
+ }
+
+ function updateNav(){ btnPrev.disabled = (state.current===0); btnNext.textContent = (state.current===steps.length-1 ? 'Terminer' : 'Suivant'); }
+
+ btnPrev.addEventListener('click',function(){ if(state.current>0){ state.current--; renderStep(); }});
+ btnNext.addEventListener('click',function(){ if(state.current<steps.length-1){ state.current++; renderStep(); } else { alert('Fin du flux. Le résumé est dans le panneau de droite.'); }});
+
+ function attachChoiceHandlers(){
+  var choices = root.querySelectorAll('.choice'); choices.forEach(function(b){
+   b.addEventListener('click',function(ev){
+    var stepKey = b.getAttribute('data-step'); var value = b.getAttribute('data-value');
+    if(stepKey==='dispute'){
+     // enregistrer raison
+     state.answers.dispute = state.answers.dispute || {}; state.answers.dispute.reason = value;
+    } else {
+     state.answers[stepKey] = value;
+     // si auparavant il y avait une contestation et on choisit autre chose, on garde la contestation séparée
+     if(stepKey!=='dispute' && state.answers.dispute && state.answers.dispute.reason && stepKey==='balance' && value!=='dispute'){}
+    }
+    // avancée automatique sauf si on est sur contestation (pour laisser choix détaillé)
+    if(stepKey!=='dispute'){ if(state.current<steps.length-1) state.current++; renderStep(); } else { renderDisputeDetails(); renderSummary(); }
+   });
+  });
+ }
+
+ function renderDisputeDetails(){
+  var cont = document.getElementById('disputeDetails'); if(!cont) return;
+  cont.innerHTML = '';
+  var reason = (state.answers.dispute && state.answers.dispute.reason) || '';
+  if(reason==='erreur_facturation'){
+   cont.innerHTML = '<div class=small style=margin-top:8px>Si erreur de facturation: demander la période et la facture concernée et proposer l envoi d un formulaire de contestation.</div>';
+   var btns = createButtons([['request_docs','Demander justificatifs au client'],['escalate_billing','Escalader au service facturation']]);
+   btns.forEach(function(b){ cont.appendChild(b); });
+  } else if(reason==='identite_usurpee'){
+   cont.innerHTML = '<div class=small style=margin-top:8px>Identité usurpée: ouvrir dossier fraude, demander pièces d identité et signaler au service conformité.</div>';
+   var btns = createButtons([['open_fraud','Ouvrir dossier fraude'],['hold_collection','Geler recouvrement']]);
+   btns.forEach(function(b){ cont.appendChild(b); });
+  } else if(reason==='deja_paye'){
+   cont.innerHTML = '<div class=small style=margin-top:8px>Déjà payé: demander preuve de paiement (relevé, reçu), proposer l envoi d un formulaire d attestation.</div>';
+   var btns = createButtons([['request_proof','Demander preuve de paiement'],['suspend_until_docs','Suspendre action en attendant preuve']]);
+   btns.forEach(function(b){ cont.appendChild(b); });
+  } else if(reason==='pas_ma_dette'){
+   cont.innerHTML = '<div class=small style=margin-top:8px>Pas ma dette: vérifier identité, demander détails et escalader pour enquête de propriété de dette.</div>';
+   var btns = createButtons([['verify_identity','Vérifier identité'],['escalate_ownership','Escalader enquête propriété']]);
+   btns.forEach(function(b){ cont.appendChild(b); });
+  } else if(reason==='autre'){
+   cont.innerHTML = '<div class=small style=margin-top:8px>Autre motif: notez la raison détaillée et proposez l envoi d un formulaire de contestation.</div>';
+   var btns = createButtons([['note_reason','Noter la raison'],['send_form','Envoyer formulaire']]);
+   btns.forEach(function(b){ cont.appendChild(b); });
+  } else {
+   // si raison non choisie, rien à afficher
+  }
+ }
+
+ function createButtons(items){
+  return items.map(function(it){
+   var btn = document.createElement('button'); btn.className='choice'; btn.setAttribute('data-action',it[0]); btn.textContent = it[1];
+   btn.addEventListener('click',function(){
+    state.answers.dispute = state.answers.dispute || {}; state.answers.dispute.action = it[0];
+    // avancer après action prise
+    if(state.current < steps.length-1) state.current++; renderStep();
+   });
+   return btn;
+  });
+ }
+
+ function renderSummary(){
+  var keys = Object.keys(state.answers); if(keys.length===0){ summaryList.innerHTML = '<small class=muted>Pas encore d éléments.</small>'; return; }
+  var ul = document.createElement('ul');
+  // ordre fixe
+  var order = ['intro','idv','balance','payment','dispute','wrap'];
+  order.forEach(function(k){
+   if(k in state.answers){
+    var li = document.createElement('li'); li.className='summary-item'; li.setAttribute('data-key',k);
+    var strong = document.createElement('strong'); strong.textContent = labelFor(k); li.appendChild(strong);
+    if(k!=='dispute'){
+     var small = document.createElement('small'); small.textContent = ' ' + String(state.answers[k]); li.appendChild(small);
+    } else {
+     var small = document.createElement('small'); small.textContent = ' ' + (state.answers.dispute.reason || 'raison non précisée'); li.appendChild(small);
+     if(state.answers.dispute.action){
+      var div = document.createElement('div'); div.style.marginTop='6px'; div.style.padding='8px'; div.style.background='rgba(255,255,255,0.03)'; div.style.borderRadius='6px';
+      var sm = document.createElement('small'); sm.textContent = 'Action: ' + state.answers.dispute.action; div.appendChild(sm); li.appendChild(div);
+     }
+    }
+    li.addEventListener('click',function(){ jumpTo(k); });
+    ul.appendChild(li);
+   }
+  });
+  summaryList.innerHTML=''; summaryList.appendChild(ul);
+ }
+
+ function labelFor(k){ var m = {'intro':'Disponibilité','idv':'Vérif identité','balance':'Conscience du client','payment':'Option règlement','dispute':'Contestation','wrap':'Suivi préféré'}; return m[k]||k; }
+
+ function jumpTo(k){ var idx = steps.findIndex(function(s){ return s.key === k; }); if(idx>=0){ state.current = idx; renderStep(); } }
+
+ // initial render
+ renderStep();
+
+})();
+</script>
+</body>
+</html>
