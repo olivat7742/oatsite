@@ -1,0 +1,153 @@
+/*		Olivier ATTIA 			----
+		Demo prep for client 	----
+		2017 08 08				----
+*/
+
+body, html {
+height: 100%;
+font-family: 'Roboto-Regular', sans-serif;
+font-size: 13px;
+color: #2c3d4f;
+position: relative;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+  	border: 1px solid black;
+}
+
+/*tr:nth-child(even) {background-color: #f2f2f2;}*/
+
+.myInfoStyle{
+	border:2px dashed red;  
+  	padding:0.03em 0.25em;
+}
+
+.myObjectionStyle{
+background: #ffe7e8; border: 2px solid #e66465;
+}
+
+.myNoteStyle{
+position: relative;
+	margin: 40px 0;
+	padding: 1.6em 2.4em .7em calc(1.4em + var(--quote-image-width));
+	font: italic 1.2rem var(--type-quote);
+	font-style: italic;
+	background: var(--quote-bg) no-repeat left / var(--quote-image-width);
+	border-radius: var(--border-rad);
+	border: 2px solid white;
+	box-shadow: 2px 2px 4px hsl(0 0% 0% / 20%);
+	text-indent: 1.6em;
+}
+
+.myAttentionStyle{
+	font-weight: bold;
+	color: #FF0000;
+}
+
+.collapse.in {
+display: block;
+}
+
+.form-group {
+margin-bottom: 15px;
+}
+
+.radio, .checkbox {
+display: block;
+min-height: 20px;
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+.myQuestionStyle
+{
+font-size: 13px;
+font-weight: bold;
+color: #999999;
+}
+
+.errorMessage
+{
+color:red;
+}
+
+.myHiddenField
+{
+	display: none;
+}
+
+.p {
+display: block;
+-webkit-margin-before: 1em;
+-webkit-margin-after: 1em;
+-webkit-margin-start: 0px;
+-webkit-margin-end: 0px;
+}
+
+/* ==========================================================================
+   Button Styles
+   #ffffff
+   ========================================================================== */
+   
+input.nav_button {
+  color: #ffffff;
+  border-width: 0;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border-bottom-left-radius: 15px;
+  background-clip: padding-box;
+  text-shadow: 0 -1px 0 rgba(1, 1, 1, 0.3);
+  -webkit-transition: background-image 0.4s ease;
+  -o-transition: background-image 0.4s ease;
+  transition: background-image 0.4s ease;
+  padding: 6px 18px;
+  width: auto;
+  text-shadow: 0 -1px 0 rgba(1, 1, 1, 0.3);
+}
+
+
+.nav_button:hover {
+  color: #fff;
+}
+
+.nav_button:focus {
+  color: #fff;
+}
+
+.nav_button:active {
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.nav_button:disabled {
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  text-shadow: none;
+}
+
+.nav_button[value=Next] {
+  background-image: -webkit-linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-image: -o-linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-image: linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-repeat: no-repeat;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#02B2AB', endColorstr='#02B2AB', GradientType=0);
+}
+
+.nav_button[value=Back] {
+  background-image: -webkit-linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-image: -o-linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-image: linear-gradient(#d1721e, #d1721e 0.49%, #da761f);
+  background-repeat: no-repeat;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#02B2AB', endColorstr='#02B2AB', GradientType=0);
+}
+
+
+textarea:hover, input:hover, textarea:active, input:active, textarea:focus, input:focus, button:focus, button:active, button:hover {
+  outline: 0px !important;
+}
