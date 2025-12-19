@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Déclaration E-Sinistres</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #e9f0fa;
+        margin: 20px;
+    }
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        color: #003e7e;
+    }
+    h3 {
+        border-bottom: 1px solid #cbd6e2;
+        padding-bottom: 4px;
+        margin-top: 25px;
+        color: #003e7e;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+    td {
+        padding: 6px 4px;
+        vertical-align: top;
+    }
+    .label {
+        font-weight: bold;
+        color: #444;
+        width: 180px;
+    }
+    .value a {
+        color: #0066cc;
+        text-decoration: none;
+    }
+    .value a:hover {
+        text-decoration: underline;
+    }
+    .buttons {
+        text-align: right;
+        margin-top: 20px;
+    }
+    button {
+        background: #0077b6;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        margin-left: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    button:hover {
+        background: #005A8D;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2><img src='resources/CA.png'>Déclaration E-Sinistres</h2>
+
+    <table>
+        <tr>
+            <td class="label">Date de la déclaration</td>
+            <td class="value">14/03/2024 14:49</td>
+            <td class="label">Date d’arrivée en bannette</td>
+            <td class="value">20/03/2024 13:45</td>
+        </tr>
+    </table>
+
+    <h3>Informations client</h3>
+    <table>
+        <tr>
+            <td class="label">N° à rappeler</td>
+            <td class="value"><a href="tel:+33660171322">+33660171322</a></td>
+            <td class="label">N° alternatif</td>
+            <td class="value"></td>
+        </tr>
+
+        <tr>
+            <td class="label">Prédéclic</td>
+            <td class="value"><a href="https://olivat7742.github.io/oatsite/integration.html?Client=CA%20Privat&ContactID={ContactID}&Agent={First}&TacheID=0000000075589960">0000000075589960</a></td>
+            <td class="label">Correspondant</td>
+            <td class="value"><a href="https://olivat7742.github.io/oatsite/integration.html?Client=CA%20Privat&ContactID={ContactID}&Agent={First}&TacheID=0000000075589960&Client=Jacques%20MOREL">Jacques MOREL</a></td>
+        </tr>
+
+        <tr>
+            <td class="label">Référence client</td>
+            <td class="value"><a href="#">88FFB0A77</a></td>
+            <td class="label">Contrat</td>
+            <td class="value"><a href="#">000011516723905</a></td>
+        </tr>
+
+        <tr>
+            <td class="label">Réseau</td>
+            <td class="value">CA</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <h3>Informations sinistre</h3>
+    <table>
+        <tr>
+            <td class="label">Date de survenance</td>
+            <td class="value">14/03/2024 00:00</td>
+            <td class="label">Présence de victime</td>
+            <td class="value">N</td>
+        </tr>
+
+        <tr>
+            <td class="label">Évènement</td>
+            <td class="value">Événements climatiques</td>
+            <td class="label">Type de contrat</td>
+            <td class="value">A4</td>
+        </tr>
+
+        <tr>
+            <td class="label">Description</td>
+            <td class="value" colspan="3">GRÊLE – Dommage carrosserie et vitres</td>
+        </tr>
+    </table>
+
+    <h3>Document(s)</h3>
+    <table>
+        <tr>
+            <td class="label">P.J</td>
+            <td class="value">(0)</td>
+        </tr>
+        <tr>
+            <td class="label">Rappel souhaité</td>
+            <td class="value">Mardi après-midi (13h00–18h00) &nbsp; Mercredi matin (09h00–13h00)</td>
+        </tr>
+    </table>
+
+    <div class="buttons">
+        <button>Traiter</button>
+        <button>Identifier</button>
+    </div>
+</div>
+
+</body>
+</html>
