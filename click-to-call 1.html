@@ -1,0 +1,664 @@
+<!--
+  =====================================================================
+  NiCE CXone Click-to-Call Demo  -  MindTouch drop-in
+  ---------------------------------------------------------------------
+  Visual identity follows the NiCE brand: Be Vietnam Pro, NiCE Blue
+  (#3694fc) on warm white (#f2f0eb), Charcoal (#21212b) text, pill
+  buttons, soft shadows, sentence case.
+
+  Paste-replace the existing <audio id="c2c-remote-audio">, the
+  <div id="c2c-wrapper">...</div>, and the <script>...</script> on the
+  page with everything between the START and END markers below.
+
+  Reference: https://help.nicecxone.com/content/acd/channels/voice/clicktocall.htm
+
+  Until you fill in C2C_CONFIG (clicktocall.js URL, JWT endpoint,
+  Client ID, SIP username), the page runs in demo mode (no real call).
+  =====================================================================
+-->
+
+<!-- ===================== START MindTouch drop-in ===================== -->
+
+<style>
+  /* Be Vietnam Pro is already preconnected on this MindTouch page.
+     We re-import here so the demo block looks right if pasted elsewhere. */
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+
+  #c2c-wrapper {
+    --nice-blue:        #3694fc;
+    --nice-blue-dark:   #1f7be0;
+    --electric-blue:    #025afb;
+    --electric-indigo:  #6100ff;
+    --teal:             #36ead0;
+    --charcoal:         #21212b;
+    --warm-white:       #f2f0eb;
+    --white:            #ffffff;
+    --line:             rgba(33, 33, 43, .08);
+    --shadow-sm:        0 1px 2px rgba(33, 33, 43, .06);
+    --shadow-md:        0 8px 24px rgba(33, 33, 43, .08);
+    --shadow-lg:        0 24px 64px rgba(33, 33, 43, .12);
+    --shadow-blue:      0 10px 28px rgba(54, 148, 252, .35);
+
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    background: var(--warm-white);
+    color: var(--charcoal);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Soft blue gradient orb echoes the nice.com hero gradient flourish */
+  #c2c-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 720px;
+    height: 720px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(54, 148, 252, .18) 0%, transparent 65%);
+    top: -240px;
+    right: -160px;
+    pointer-events: none;
+  }
+  #c2c-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(97, 0, 255, .10) 0%, transparent 70%);
+    bottom: -180px;
+    left: -120px;
+    pointer-events: none;
+  }
+
+  #c2c-wrapper * { box-sizing: border-box; }
+
+  /* ---------- Card ---------- */
+  .c2c-card {
+    position: relative;
+    background: var(--white);
+    border-radius: 32px;
+    padding: 48px 52px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--line);
+  }
+
+  /* ---------- Brand row ---------- */
+  .c2c-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .c2c-smile {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--nice-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-blue);
+  }
+  .c2c-smile svg { width: 24px; height: 24px; }
+  .c2c-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .c2c-brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--charcoal);
+    letter-spacing: -0.01em;
+  }
+  .c2c-brand-name span.dot { color: var(--nice-blue); }
+  .c2c-brand-sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(33, 33, 43, .55);
+    margin-top: 2px;
+  }
+
+  /* ---------- Headline ---------- */
+  .c2c-title {
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--charcoal);
+    margin: 0 0 8px;
+  }
+  .c2c-subtitle {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: rgba(33, 33, 43, .65);
+    margin: 0 0 32px;
+  }
+
+  /* ---------- Destination panel (warm-white squircle) ---------- */
+  .c2c-destination {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--warm-white);
+    border-radius: 20px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+  }
+  .c2c-destination-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--nice-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .c2c-destination-icon svg { width: 20px; height: 20px; }
+  .c2c-destination-info { display: flex; flex-direction: column; gap: 2px; }
+  .c2c-destination-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(33, 33, 43, .55);
+  }
+  .c2c-destination-number {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--charcoal);
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Status strip ---------- */
+  .c2c-status-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .c2c-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(33, 33, 43, .25);
+    flex-shrink: 0;
+    transition: background .25s, box-shadow .25s;
+  }
+  .c2c-status-dot.idle       { background: rgba(33, 33, 43, .25); }
+  .c2c-status-dot.connecting {
+    background: var(--nice-blue);
+    box-shadow: 0 0 0 4px rgba(54, 148, 252, .18);
+    animation: c2cDotBlink .8s ease-in-out infinite alternate;
+  }
+  .c2c-status-dot.active {
+    background: #00e2a0;
+    box-shadow: 0 0 0 4px rgba(0, 226, 160, .22);
+  }
+  .c2c-status-dot.error {
+    background: #ff5b8a;
+    box-shadow: 0 0 0 4px rgba(255, 91, 138, .22);
+  }
+  @keyframes c2cDotBlink { from { opacity: 1; } to { opacity: .35; } }
+
+  .c2c-status-text { color: rgba(33, 33, 43, .65); flex: 1; }
+  .c2c-status-text strong { color: var(--charcoal); font-weight: 600; }
+  .c2c-timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--nice-blue);
+    flex-shrink: 0;
+    min-width: 44px;
+    text-align: right;
+  }
+
+  /* ---------- Buttons ---------- */
+  .c2c-controls {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .c2c-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 24px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    border: none;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+  }
+
+  .c2c-btn-call {
+    background: var(--nice-blue);
+    color: var(--white);
+    box-shadow: var(--shadow-blue);
+  }
+  .c2c-btn-call:hover:not(:disabled) {
+    background: var(--nice-blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px rgba(54, 148, 252, .45);
+  }
+  .c2c-btn-call:active:not(:disabled) { transform: translateY(0); }
+  .c2c-btn-call:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none !important;
+  }
+
+  @keyframes c2cRing {
+    0%   { box-shadow: var(--shadow-blue), 0 0 0 0   rgba(54, 148, 252, .45); }
+    70%  { box-shadow: var(--shadow-blue), 0 0 0 14px rgba(54, 148, 252, 0); }
+    100% { box-shadow: var(--shadow-blue), 0 0 0 0   rgba(54, 148, 252, 0); }
+  }
+  .c2c-btn-call.calling { animation: c2cRing 1.4s infinite; }
+
+  .c2c-btn-hangup {
+    background: var(--white);
+    color: var(--charcoal);
+    border: 1px solid var(--line);
+  }
+  .c2c-btn-hangup:hover:not(:disabled) {
+    background: var(--charcoal);
+    color: var(--white);
+    border-color: var(--charcoal);
+    transform: translateY(-1px);
+  }
+  .c2c-btn-hangup:active:not(:disabled) { transform: translateY(0); }
+  .c2c-btn-hangup:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .c2c-btn-icon { display: inline-flex; align-items: center; }
+  .c2c-btn-icon svg { width: 18px; height: 18px; }
+
+  /* ---------- Event log ---------- */
+  .c2c-log-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(33, 33, 43, .55);
+    cursor: pointer;
+    user-select: none;
+    transition: color .2s;
+    margin-bottom: 8px;
+  }
+  .c2c-log-toggle:hover { color: var(--nice-blue); }
+  .c2c-log-arrow {
+    transition: transform .2s;
+    font-size: 10px;
+    color: var(--nice-blue);
+  }
+  .c2c-log-arrow.open { transform: rotate(90deg); }
+
+  .c2c-log {
+    background: var(--warm-white);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
+    height: 140px;
+    overflow-y: auto;
+    font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    display: none;
+    color: var(--charcoal);
+  }
+  .c2c-log.open { display: block; }
+  .c2c-log::-webkit-scrollbar { width: 6px; }
+  .c2c-log::-webkit-scrollbar-thumb { background: rgba(33, 33, 43, .15); border-radius: 6px; }
+
+  .log-info    { color: rgba(33, 33, 43, .75); }
+  .log-success { color: #009e6f; }
+  .log-warn    { color: #c97a00; }
+  .log-error   { color: #d23b6d; }
+  .log-time    { color: rgba(33, 33, 43, .35); margin-right: 8px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 520px) {
+    .c2c-card { padding: 32px 24px; border-radius: 24px; }
+    .c2c-controls { grid-template-columns: 1fr; }
+    .c2c-title { font-size: 28px; }
+  }
+</style>
+
+<audio id="c2c-remote-audio" autoplay playsinline style="display:none"></audio>
+
+<div id="c2c-wrapper">
+  <div class="c2c-card">
+
+    <div class="c2c-brand">
+      <!-- NiCE smile avatar: blue circle + white smile curve -->
+      <div class="c2c-smile" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 11c1.4 3.2 4 5 6 5s4.6-1.8 6-5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="c2c-brand-text">
+        <span class="c2c-brand-name">N<span class="dot">i</span>CE CXone</span>
+        <span class="c2c-brand-sub">Click to call · WebRTC demo</span>
+      </div>
+    </div>
+
+    <h2 class="c2c-title">Talk to us — one click away</h2>
+    <p class="c2c-subtitle">A seamless WebRTC call, straight from your browser. No dial pad. No download. Just connection.</p>
+
+    <div class="c2c-destination">
+      <span class="c2c-destination-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="c2c-destination-info">
+        <span class="c2c-destination-label">You will be connected to</span>
+        <span class="c2c-destination-number">833-852-0849</span>
+      </div>
+    </div>
+
+    <div class="c2c-status-strip">
+      <span class="c2c-status-dot idle" id="c2c-dot"></span>
+      <span class="c2c-status-text" id="c2c-status-text"><strong>Ready</strong> — click to dial</span>
+      <span class="c2c-timer" id="c2c-timer"></span>
+    </div>
+
+    <div class="c2c-controls">
+      <button id="c2c-btn-call" class="c2c-btn c2c-btn-call" onclick="c2cInitiateCall()">
+        <span class="c2c-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"
+                  stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Call now
+      </button>
+      <button id="c2c-btn-hangup" class="c2c-btn c2c-btn-hangup" onclick="c2cHangUp()" disabled>
+        <span class="c2c-btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 11c4-4 14-4 18 0l-2 3-3-1-1-2c-2-1-4-1-6 0l-1 2-3 1-2-3z"
+                  stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            <path d="M2 14l20-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        End call
+      </button>
+    </div>
+
+    <!-- clicktocall.js expects these IDs to exist; keep them off-screen. -->
+    <div id="c2c-sdk-hidden" aria-hidden="true"
+         style="position:absolute;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none;">
+      <button id="c2c-mute"></button>
+      <button id="c2c-keypad"></button>
+      <div id="c2c-dtmf"></div>
+    </div>
+
+    <div class="c2c-log-toggle" onclick="c2cToggleLog()">
+      <span id="c2c-log-arrow" class="c2c-log-arrow">▶</span>
+      <span>SDK event log</span>
+    </div>
+    <div id="c2c-log" class="c2c-log"></div>
+  </div>
+</div>
+
+<script>/*<![CDATA[*/
+/*  =================================================================
+    Click-to-call configuration
+    -----------------------------------------------------------------
+    Fill in the five values below, upload clicktocall.js as a MindTouch
+    attachment, and paste its URL into C2C_SDK_URL.
+    ================================================================= */
+var C2C_CONFIG = {
+  /* (1) URL of the clicktocall.js file from your CXone account rep,
+     uploaded to this page's MindTouch Attachments.
+     Example: 'https://cxonese.mindtouch.us/@api/deki/files/12345/clicktocall.js' */
+  C2C_SDK_URL      : '',
+
+  /* (2) HTTPS endpoint that returns a short-lived RS256 JWT containing
+     { ContactAddress, ClientId }. Token TTL must be ≤ 20 seconds. */
+  C2C_JWT_URL      : '',
+
+  /* (3) Client ID NiCE issued for this click-to-call deployment. */
+  C2C_CLIENT_ID    : '',
+
+  /* (4) SIP username NiCE issued (non-spaced, ≤ 20 chars). */
+  C2C_SIP_USERNAME : '',
+
+  /* (5) CXone Point-of-Contact (POC) address the SDK dials.
+     This is NOT the human-readable phone number a visitor sees on the
+     page — it's the CXone POC identifier configured by your account
+     team. The Studio script behind this POC handles the routing. */
+  C2C_POC_ADDRESS  : '011170049010002011',
+
+  C2C_DISPLAY_NAME : 'CXone SE Demo Visitor',
+  C2C_POCR_ENV     : 'PROD',
+  C2C_LOCATION     : 'US'
+};
+
+/* ---- Runtime state ------------------------------------------------ */
+var _c2cTimer = null;
+var _c2cSecs  = 0;
+var _c2cSdkReady = false;
+
+/* ---- Tiny logger -------------------------------------------------- */
+function c2cLog(msg, level) {
+  var box = document.getElementById('c2c-log');
+  if (!box) return;
+  var t  = new Date();
+  var ts = [t.getHours(), t.getMinutes(), t.getSeconds()]
+             .map(function(n){ return String(n).padStart(2,'0'); }).join(':');
+  var row = document.createElement('div');
+  row.innerHTML =
+      '<span class="log-time">[' + ts + ']</span>' +
+      '<span class="log-' + (level || 'info') + '">' + msg + '</span>';
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+function c2cToggleLog() {
+  var box   = document.getElementById('c2c-log');
+  var arrow = document.getElementById('c2c-log-arrow');
+  var open  = box.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+/* ---- Status + button helpers ------------------------------------- */
+function c2cStatus(html, dot) {
+  document.getElementById('c2c-dot').className = 'c2c-status-dot ' + dot;
+  document.getElementById('c2c-status-text').innerHTML = html;
+}
+function c2cSetCalling(on) {
+  var b1 = document.getElementById('c2c-btn-call');
+  var b2 = document.getElementById('c2c-btn-hangup');
+  b1.disabled = on;
+  b2.disabled = !on;
+  b1.classList.toggle('calling', on);
+}
+function c2cStartTimer() {
+  _c2cSecs = 0;
+  var el = document.getElementById('c2c-timer');
+  _c2cTimer = setInterval(function() {
+    _c2cSecs++;
+    el.textContent =
+      String(Math.floor(_c2cSecs/60)).padStart(2,'0') + ':' +
+      String(_c2cSecs%60).padStart(2,'0');
+  }, 1000);
+}
+function c2cStopTimer() {
+  clearInterval(_c2cTimer);
+  document.getElementById('c2c-timer').textContent = '';
+}
+
+/* ---- Wire DOM ids that clicktocall.js reads from window ---------- */
+function c2cInstallSdkGlobals() {
+  window.getJWT1TokenURL             = C2C_CONFIG.C2C_JWT_URL;
+  window.clientID                    = C2C_CONFIG.C2C_CLIENT_ID;
+  window.retryCount                  = 3;
+  window.POCREnvironmentXHeaderValue = C2C_CONFIG.C2C_POCR_ENV;
+  window.defaultLocation             = C2C_CONFIG.C2C_LOCATION;
+
+  window.phoneServerConfig = {
+    domain      : 'cxonevoice.com',
+    addresses   : [],
+    iceServers  : [],
+    userName    : C2C_CONFIG.C2C_SIP_USERNAME,
+    displayName : C2C_CONFIG.C2C_DISPLAY_NAME,
+    password    : ''
+  };
+
+  window.clickToCallButtonId       = 'c2c-btn-call';
+  window.hangUpButtonId            = 'c2c-btn-hangup';
+  window.muteAudioButtonId         = 'c2c-mute';
+  window.keypadButtonId            = 'c2c-keypad';
+  window.dtmfKeyDivId              = 'c2c-dtmf';
+  window.callStatusMessageLabelId  = 'c2c-status-text';
+  window.remoteAudioId             = 'c2c-remote-audio';
+}
+
+/* ---- Dynamically pull in clicktocall.js (once) ------------------- */
+function c2cLoadSdk() {
+  return new Promise(function(resolve, reject) {
+    if (_c2cSdkReady) return resolve(true);
+    if (!C2C_CONFIG.C2C_SDK_URL) {
+      reject(new Error('C2C_SDK_URL is empty — clicktocall.js not configured.'));
+      return;
+    }
+    c2cInstallSdkGlobals();
+    var s = document.createElement('script');
+    s.src = C2C_CONFIG.C2C_SDK_URL;
+    s.async = true;
+    s.onload  = function() {
+      _c2cSdkReady = true;
+      c2cLog('clicktocall.js loaded.', 'success');
+      resolve(true);
+    };
+    s.onerror = function() {
+      reject(new Error('Failed to load clicktocall.js from ' + C2C_CONFIG.C2C_SDK_URL));
+    };
+    document.head.appendChild(s);
+  });
+}
+
+function c2cIsConfigured() {
+  return !!(C2C_CONFIG.C2C_SDK_URL &&
+            C2C_CONFIG.C2C_JWT_URL &&
+            C2C_CONFIG.C2C_CLIENT_ID &&
+            C2C_CONFIG.C2C_SIP_USERNAME);
+}
+
+/* ---- Main: click to call ---------------------------------------- */
+async function c2cInitiateCall() {
+  document.getElementById('c2c-log').classList.add('open');
+  document.getElementById('c2c-log-arrow').classList.add('open');
+
+  c2cStatus('<strong>Connecting…</strong>', 'connecting');
+  c2cSetCalling(true);
+  c2cLog('Initiating call to ' + C2C_CONFIG.C2C_POC_ADDRESS, 'info');
+
+  if (!c2cIsConfigured()) {
+    c2cLog('clicktocall.js not yet configured. Running demo mode.', 'warn');
+    c2cLog('See page-source comments for the values still required.', 'warn');
+    return c2cDemoMode();
+  }
+
+  try {
+    await c2cLoadSdk();
+    if (typeof window.makeCall !== 'function') {
+      throw new Error('clicktocall.js loaded but window.makeCall is missing.');
+    }
+    c2cLog('Calling makeCall("' + C2C_CONFIG.C2C_POC_ADDRESS + '")…', 'info');
+    window.makeCall(
+      C2C_CONFIG.C2C_POC_ADDRESS,
+      C2C_CONFIG.C2C_LOCATION,
+      { source: 'mindtouch-c2c-demo', page: 'Click_to_Call_Demo' },
+      { skill: 'click-to-call-demo' }
+    );
+    c2cStartTimer();
+  } catch (err) {
+    c2cLog('✗ ' + err.message, 'error');
+    c2cStatus('<strong>Something went wrong</strong> — see log', 'error');
+    c2cSetCalling(false);
+    c2cStopTimer();
+  }
+}
+
+/* ---- Hang up ---------------------------------------------------- */
+function c2cHangUp() {
+  c2cLog('Ending call…', 'info');
+  try {
+    if (typeof window.hangUp === 'function') window.hangUp();
+    else if (typeof window.endCall === 'function') window.endCall();
+  } catch (e) {
+    c2cLog('Hang-up note: ' + e.message, 'warn');
+  }
+  c2cCallEnded();
+}
+function c2cCallEnded() {
+  c2cStatus('<strong>Call ended</strong> — ready when you are', 'idle');
+  c2cSetCalling(false);
+  c2cStopTimer();
+  c2cLog('Call ended.', 'info');
+}
+
+/* ---- Demo mode (SDK not yet configured) ----------------------- */
+async function c2cDemoMode() {
+  function wait(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  c2cLog('[demo] Requesting JWT from auth endpoint…', 'info');         await wait(800);
+  c2cLog('[demo] ✓ JWT received (RS256, 20s TTL).', 'success');
+
+  c2cLog('[demo] Opening SIP / WebRTC peer to cxonevoice.com…', 'info'); await wait(700);
+
+  try {
+    var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    c2cLog('[demo] ✓ Microphone access granted.', 'success');
+    stream.getTracks().forEach(function(t){ t.stop(); });
+  } catch (e) {
+    c2cLog('[demo] ⚠ Microphone permission: ' + e.message, 'warn');
+  }
+
+  c2cLog('[demo] Routing through POC for ' + C2C_CONFIG.C2C_POC_ADDRESS + '…', 'info');
+  await wait(900);
+  c2cStatus('<strong>Ringing…</strong>', 'connecting');
+  await wait(1300);
+
+  c2cLog('[demo] ✓ Call connected via NiCE CXone WebRTC.', 'success');
+  c2cStatus('<strong>In call</strong> — NiCE CXone WebRTC', 'active');
+  c2cStartTimer();
+  c2cLog('[demo] Live. Click End call to finish.', 'success');
+}
+
+/* ---- Boot ------------------------------------------------------- */
+c2cLog('NiCE CXone Click-to-Call initialized.', 'info');
+if (c2cIsConfigured()) {
+  c2cLog('Configuration detected — clicktocall.js will load on first click.', 'info');
+} else {
+  c2cLog('No SDK configured — demo mode active.', 'warn');
+}
+/*]]>*/</script>
+
+<!-- ===================== END MindTouch drop-in ===================== -->
