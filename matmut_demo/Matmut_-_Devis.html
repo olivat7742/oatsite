@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-TVML74S');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <title>Demande de Devis</title>
+    <style>
+        :root {
+            --navy: #1b0b5e;
+            --navy-deep: #12063f;
+            --teal: #00bfb3;
+            --teal-dark: #00a399;
+            --magenta: #e6007e;
+            --ink: #1f2440;
+            --muted: #6b7088;
+            --field-border: #d7dae6;
+            --field-bg: #f8f9fc;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 15% -10%, #2a1788 0%, transparent 55%),
+                        radial-gradient(900px 500px at 110% 110%, #00bfb3 0%, transparent 45%),
+                        linear-gradient(135deg, #1b0b5e 0%, #2a1280 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            color: var(--ink);
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(11, 5, 45, 0.35);
+            max-width: 460px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* --- Branded header --- */
+        .card-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+            padding: 26px 32px 30px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+        }
+        .card-header::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--magenta), #ffc100, var(--teal), #2d6cdf, #7b2ff7);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .brand .wordmark {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .card-header h1 {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .card-header .lead {
+            margin: 8px 0 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* --- Body / form --- */
+        .card-body { padding: 28px 32px 30px; }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: 0.2px;
+        }
+        label:first-of-type { margin-top: 0; }
+        label svg { flex: none; }
+
+        input,
+        select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid var(--field-border);
+            border-radius: 12px;
+            font-size: 15px;
+            background: var(--field-bg);
+            color: var(--ink);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        input::placeholder { color: #a6abc0; }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 191, 179, 0.15);
+        }
+
+        input[type="date"],
+        select { cursor: pointer; }
+
+        /* --- Conditional product blocks --- */
+        .product-fields { display: none; }
+        .product-fields.active { display: block; }
+
+        /* --- Consent (opt-in) --- */
+        .consent {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 22px;
+            padding: 14px;
+            background: #f2fbfa;
+            border: 1.5px solid #cdeeeb;
+            border-radius: 12px;
+        }
+        .consent input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 2px 0 0;
+            accent-color: var(--teal-dark);
+            cursor: pointer;
+            flex: none;
+        }
+        .consent label {
+            margin: 0;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.5;
+            letter-spacing: 0;
+        }
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--navy) 0%, #311a9c 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 24px;
+            box-shadow: 0 10px 22px rgba(27, 11, 94, 0.28);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease;
+        }
+        button:hover {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px rgba(0, 191, 179, 0.35);
+        }
+        button:active { transform: translateY(0); }
+
+        .note {
+            text-align: center;
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--muted);
+            margin: 18px 0 0;
+        }
+        .note a { color: var(--teal-dark); text-decoration: none; font-weight: 600; }
+        .note a:hover { text-decoration: underline; }
+
+        .secure {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        iframe { display: none; }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="card-header">
+            <div class="brand">
+                <!-- Matmut-style multicolour star -->
+                <svg class="star" width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+                    <g transform="translate(50,50)">
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#e6007e" transform="rotate(0)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#ffc100" transform="rotate(72)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#00bfb3" transform="rotate(144)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#2d6cdf" transform="rotate(216)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#7b2ff7" transform="rotate(288)"/>
+                        <circle cx="0" cy="0" r="7" fill="#fff"/>
+                    </g>
+                </svg>
+                <span class="wordmark">matmut</span>
+            </div>
+            <h1>Demandez votre devis en ligne</h1>
+            <p class="lead">Choisissez votre assurance, un conseiller Matmut vous rappelle.</p>
+        </div>
+
+        <div class="card-body">
+        <form action="#" id="myForm" method="GET" onsubmit="navigateToURL(event)">
+
+            <!-- p5 : type d'assurance -->
+            <label for="productType">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7z"/></svg>
+                Type d'assurance souhaitée
+            </label>
+            <select id="productType" name="inputVariable5" required onchange="showProductFields()">
+                <option value="" disabled selected>Choisissez une assurance…</option>
+                <option value="Auto">Auto</option>
+                <option value="Habitation">Habitation</option>
+                <option value="Santé">Santé</option>
+            </select>
+
+            <!-- ==== Champs conditionnels : AUTO (p6, p7, p8) ==== -->
+            <div class="product-fields" id="fields-Auto">
+                <label for="autoVehicule">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5"/><path d="M5 13h14v4H5z"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></svg>
+                    Marque et modèle du véhicule
+                </label>
+                <input type="text" id="autoVehicule" placeholder="Ex : Renault Clio">
+
+                <label for="autoAnnee">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+                    Année de mise en circulation
+                </label>
+                <input type="text" id="autoAnnee" placeholder="Ex : 2019" inputmode="numeric">
+
+                <label for="autoUsage">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+                    Usage du véhicule
+                </label>
+                <select id="autoUsage">
+                    <option value="" disabled selected>Choisissez…</option>
+                    <option value="Personnel">Personnel</option>
+                    <option value="Professionnel">Professionnel</option>
+                    <option value="Mixte">Mixte</option>
+                </select>
+            </div>
+
+            <!-- ==== Champs conditionnels : HABITATION (p6, p7, p8) ==== -->
+            <div class="product-fields" id="fields-Habitation">
+                <label for="habLogement">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+                    Type de logement
+                </label>
+                <select id="habLogement">
+                    <option value="" disabled selected>Choisissez…</option>
+                    <option value="Appartement">Appartement</option>
+                    <option value="Maison">Maison</option>
+                </select>
+
+                <label for="habSurface">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 9h16M9 4v16"/></svg>
+                    Surface (m²) et nombre de pièces
+                </label>
+                <input type="text" id="habSurface" placeholder="Ex : 75 m² - 3 pièces">
+
+                <label for="habStatut">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                    Vous êtes
+                </label>
+                <select id="habStatut">
+                    <option value="" disabled selected>Choisissez…</option>
+                    <option value="Propriétaire">Propriétaire</option>
+                    <option value="Locataire">Locataire</option>
+                </select>
+            </div>
+
+            <!-- ==== Champs conditionnels : SANTÉ (p6, p7, p8) ==== -->
+            <div class="product-fields" id="fields-Santé">
+                <label for="santeNaissance">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+                    Date de naissance
+                </label>
+                <input type="date" id="santeNaissance">
+
+                <label for="santeRegime">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v8M8 12h8"/></svg>
+                    Régime
+                </label>
+                <select id="santeRegime">
+                    <option value="" disabled selected>Choisissez…</option>
+                    <option value="Salarié">Salarié</option>
+                    <option value="TNS / Indépendant">TNS / Indépendant</option>
+                    <option value="Retraité">Retraité</option>
+                    <option value="Étudiant">Étudiant</option>
+                </select>
+
+                <label for="santeBeneficiaires">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M15 20c0-2 2-3.5 4-3.5"/></svg>
+                    Nombre de bénéficiaires
+                </label>
+                <select id="santeBeneficiaires">
+                    <option value="" disabled selected>Choisissez…</option>
+                    <option value="1">1 (moi-même)</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4+">4 ou plus</option>
+                </select>
+            </div>
+
+            <!-- p1 : prénom -->
+            <label for="inputVariable1">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                Prénom
+            </label>
+            <input type="text" id="inputVariable1" name="inputVariable1" required>
+
+            <!-- p2 : nom -->
+            <label for="inputVariable2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                Nom
+            </label>
+            <input type="text" id="inputVariable2" name="inputVariable2" required>
+
+            <!-- p3 : email -->
+            <label for="inputVariable3">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                Email
+            </label>
+            <input type="email" id="inputVariable3" name="inputVariable3" placeholder="Ex : prenom.nom@email.com" required>
+
+            <!-- p4 : téléphone -->
+            <label for="inputVariable4">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L20 13l1 4v3a1 1 0 0 1-1 1A16 16 0 0 1 3 5a1 1 0 0 1 1-1Z"/></svg>
+                Votre numéro de téléphone
+            </label>
+            <input type="tel" id="inputVariable4" name="inputVariable4" placeholder="Ex : 0601020304" required>
+
+            <!-- p9 : créneau de rappel préféré -->
+            <label for="callbackSlot">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                Créneau de rappel préféré
+            </label>
+            <select id="callbackSlot" name="callbackSlot" required>
+                <option value="" disabled selected>Choisissez un créneau…</option>
+                <option value="Matin (9h-12h)">Matin (9h - 12h)</option>
+                <option value="Après-midi (12h-17h)">Après-midi (12h - 17h)</option>
+                <option value="Soir (17h-19h)">Soir (17h - 19h)</option>
+            </select>
+
+            <!-- p11 : notes -->
+            <label for="inputVariable5b">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 10h16M4 15h10"/></svg>
+                Précisions (facultatif)
+            </label>
+            <input type="text" id="inputVariable5b" name="inputVariable5b" placeholder="Une information utile pour votre devis ?">
+
+            <!-- p10 : consentement (opt-in) - étape clé du cas d'usage 2 -->
+            <div class="consent">
+                <input type="checkbox" id="consent" name="consent" required>
+                <label for="consent">J'accepte d'être recontacté(e) par téléphone par un conseiller Matmut au sujet de ma demande de devis, et que mes données soient utilisées à cette fin.</label>
+            </div>
+
+            <iframe id="inlineFrame1" name="inlineFrame1" title="myResult" width="0" height="0" src=""></iframe>
+            <button type="submit">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L20 13l1 4v3a1 1 0 0 1-1 1A16 16 0 0 1 3 5a1 1 0 0 1 1-1Z"/></svg>
+                Demander mon devis
+            </button>
+        </form>
+
+        <div class="secure">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7088" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Vos données sont protégées et confidentielles
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
+        <script language="JavaScript">/*<![CDATA[*/
+
+            // Affiche/masque les champs propres au produit choisi
+            function showProductFields() {
+                var choice = document.getElementById('productType').value;
+                var blocks = document.querySelectorAll('.product-fields');
+                for (var i = 0; i < blocks.length; i++) {
+                    blocks[i].classList.remove('active');
+                }
+                var target = document.getElementById('fields-' + choice);
+                if (target) { target.classList.add('active'); }
+            }
+
+            // Récupère les 3 détails propres au produit sélectionné -> p6, p7, p8
+            function getProductDetails(choice) {
+                if (choice === 'Auto') {
+                    return [
+                        document.getElementById('autoVehicule').value,
+                        document.getElementById('autoAnnee').value,
+                        document.getElementById('autoUsage').value
+                    ];
+                } else if (choice === 'Habitation') {
+                    return [
+                        document.getElementById('habLogement').value,
+                        document.getElementById('habSurface').value,
+                        document.getElementById('habStatut').value
+                    ];
+                } else if (choice === 'Santé') {
+                    return [
+                        document.getElementById('santeNaissance').value,
+                        document.getElementById('santeRegime').value,
+                        document.getElementById('santeBeneficiaires').value
+                    ];
+                }
+                return ['', '', ''];
+            }
+
+            function navigateToURL(event) {
+                if (event) { event.preventDefault(); }
+
+                // Le consentement est obligatoire (opt-in du cas d'usage 2)
+                if (!document.getElementById('consent').checked) {
+                    alert("Merci d'accepter d'être recontacté(e) pour recevoir votre devis.");
+                    return;
+                }
+
+                var p1 = document.getElementById('inputVariable1').value;   // prénom
+                var p2 = document.getElementById('inputVariable2').value;   // nom
+                var p3 = document.getElementById('inputVariable3').value;   // email
+                var p4 = document.getElementById('inputVariable4').value;   // téléphone
+                var p5 = document.getElementById('productType').value;      // type d'assurance
+                var details = getProductDetails(p5);                        // [p6, p7, p8]
+                var p6 = details[0];
+                var p7 = details[1];
+                var p8 = details[2];
+                var p9  = document.getElementById('callbackSlot').value;    // créneau de rappel
+                var p10 = "Oui";                                            // consentement
+                var p11 = document.getElementById('inputVariable5b').value; // notes
+
+                // Encodage pour gérer accents, espaces et caractères spéciaux
+                var e = encodeURIComponent;
+                var newURL = "https://home-e32.niceincontact.com/inContact/Manage/Scripts/Spawn.aspx"
+                    + "?scriptName=Mat\\Mat_PC_DEMANDE_DEVIS"
+                    + "&bus_no=4599219"
+                    + "&scriptId=318213502"
+                    + "&skill_no=36327473"
+                    + "&p1=" + e(p1)
+                    + "&p2=" + e(p2)
+                    + "&p3=" + e(p3)
+                    + "&p4=" + e(p4)
+                    + "&p5=" + e(p5)
+                    + "&p6=" + e(p6)
+                    + "&p7=" + e(p7)
+                    + "&p8=" + e(p8)
+                    + "&p9=" + e(p9)
+                    + "&p10=" + e(p10)
+                    + "&p11=" + e(p11)
+                    + "&Guid=b7b64843-5b9b-4d93-b159-dab12599b454";
+
+                console.log("Demande de devis envoyée !");
+                console.log('Redirect to:', newURL);
+                document.getElementById('inlineFrame1').src = newURL;
+                document.getElementById('myForm').reset();
+                showProductFields(); // ré-masque les blocs produit après reset
+            }
+        /*]]>*/
+        </script>
+        <p class="note">Vous n'êtes pas encore client Matmut ?<br>À l'issue de la conversation téléphonique, aucune donnée n'est conservée sauf en cas de devis ou souscription.</p>
+        </div>
+    </div>
+</body>
+
+</html>
