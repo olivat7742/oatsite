@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande de remboursement santé</title>
+    <style>
+        :root {
+            --navy: #1b0b5e;
+            --navy-deep: #12063f;
+            --teal: #00bfb3;
+            --teal-dark: #00a399;
+            --magenta: #e6007e;
+            --ink: #1f2440;
+            --muted: #6b7088;
+            --field-border: #d7dae6;
+            --field-bg: #f8f9fc;
+            --ok: #1f9d57;
+            --err: #e6007e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 15% -10%, #2a1788 0%, transparent 55%),
+                        radial-gradient(900px 500px at 110% 110%, #00bfb3 0%, transparent 45%),
+                        linear-gradient(135deg, #1b0b5e 0%, #2a1280 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            color: var(--ink);
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(11, 5, 45, 0.35);
+            max-width: 460px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* --- Branded header --- */
+        .card-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+            padding: 26px 32px 30px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+        }
+        .card-header::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--magenta), #ffc100, var(--teal), #2d6cdf, #7b2ff7);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .brand .wordmark {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .card-header h1 {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .card-header .lead {
+            margin: 8px 0 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        /* --- Body / form --- */
+        .card-body { padding: 28px 32px 30px; }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: 0.2px;
+        }
+        label:first-of-type { margin-top: 0; }
+        label svg { flex: none; }
+
+        input,
+        select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid var(--field-border);
+            border-radius: 12px;
+            font-size: 15px;
+            background: var(--field-bg);
+            color: var(--ink);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        input::placeholder { color: #a6abc0; }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 191, 179, 0.15);
+        }
+
+        input[type="date"],
+        select { cursor: pointer; }
+
+        /* --- File upload (justificatif) --- */
+        .upload-zone {
+            border: 1.5px dashed var(--field-border);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            background: var(--field-bg);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .upload-zone:hover,
+        .upload-zone.drag {
+            border-color: var(--teal);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 191, 179, 0.12);
+        }
+        .upload-zone .up-ico { color: var(--teal-dark); margin-bottom: 6px; }
+        .upload-zone .up-main { font-size: 14px; font-weight: 600; color: var(--navy); }
+        .upload-zone .up-main u { color: var(--teal-dark); text-decoration: none; }
+        .upload-zone .up-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+        #docFile { display: none; }
+
+        .file-chip {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 11px 13px;
+            background: #f2fbfa;
+            border: 1.5px solid #cdeeeb;
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--ink);
+        }
+        .file-chip.show { display: flex; }
+        .file-chip .fname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-chip .fsize { color: var(--muted); flex: none; }
+        .file-chip .rm { margin-left: auto; cursor: pointer; color: var(--magenta); font-weight: 700; flex: none; border: none; background: none; font-size: 16px; padding: 0; width: auto; }
+        .file-error { display: none; color: var(--magenta); font-size: 12px; margin-top: 6px; font-weight: 600; }
+
+        /* --- Consent (RGPD) --- */
+        .consent {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 22px;
+            padding: 14px;
+            background: #f2fbfa;
+            border: 1.5px solid #cdeeeb;
+            border-radius: 12px;
+        }
+        .consent input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 2px 0 0;
+            accent-color: var(--teal-dark);
+            cursor: pointer;
+            flex: none;
+        }
+        .consent label {
+            margin: 0;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.5;
+            letter-spacing: 0;
+        }
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--navy) 0%, #311a9c 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 24px;
+            box-shadow: 0 10px 22px rgba(27, 11, 94, 0.28);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px rgba(0, 191, 179, 0.35);
+        }
+        button:active { transform: translateY(0); }
+        button:disabled { opacity: 0.65; cursor: progress; }
+
+        .note {
+            text-align: center;
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--muted);
+            margin: 18px 0 0;
+        }
+
+        .secure {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* --- Status panel (progression NocoDB) --- */
+        .status-panel {
+            display: none;
+            margin-top: 20px;
+            padding: 16px 16px 14px;
+            border: 1.5px solid var(--field-border);
+            border-radius: 12px;
+            background: var(--field-bg);
+        }
+        .status-panel.show { display: block; }
+        .status-panel h3 {
+            margin: 0 0 10px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: 0.2px;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            font-size: 12.5px;
+            line-height: 1.4;
+            padding: 5px 0;
+            color: var(--muted);
+        }
+        .step .dot {
+            flex: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--field-border);
+            margin-top: 1px;
+            display: grid;
+            place-items: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .step.pending .dot { border-color: var(--field-border); }
+        .step.run .dot { border-color: var(--teal); border-right-color: transparent; animation: spin 0.7s linear infinite; }
+        .step.ok .dot { background: var(--ok); border-color: var(--ok); }
+        .step.ok .dot::after { content: "\2713"; }
+        .step.err .dot { background: var(--err); border-color: var(--err); }
+        .step.err .dot::after { content: "\00d7"; }
+        .step.ok, .step.run { color: var(--ink); }
+        .step .txt b { color: var(--navy); font-weight: 700; }
+        .step .sub { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; word-break: break-word; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-banner {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        .result-banner.ok  { display: block; background: #eef8f1; border: 1.5px solid #bfe6cd; color: #15683a; }
+        .result-banner.err { display: block; background: #fdeef5; border: 1.5px solid #f4c8dd; color: #a01659; }
+
+        .demo-flag {
+            margin-top: 14px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--muted);
+            background: #fff8e9;
+            border: 1px solid #f3e2b8;
+            border-radius: 9px;
+            padding: 9px 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="card-header">
+            <div class="brand">
+                <!-- Matmut-style multicolour star -->
+                <svg class="star" width="30" height="30" viewBox="0 0 100 100" aria-hidden="true">
+                    <g transform="translate(50,50)">
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#e6007e" transform="rotate(0)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#ffc100" transform="rotate(72)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#00bfb3" transform="rotate(144)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#2d6cdf" transform="rotate(216)"/>
+                        <ellipse cx="0" cy="-25" rx="9" ry="22" fill="#7b2ff7" transform="rotate(288)"/>
+                        <circle cx="0" cy="0" r="7" fill="#fff"/>
+                    </g>
+                </svg>
+                <span class="wordmark">matmut</span>
+            </div>
+            <h1>Demande de remboursement santé</h1>
+            <p class="lead">Envoyez votre justificatif, un gestionnaire Matmut traite votre demande.</p>
+        </div>
+
+        <div class="card-body">
+        <form action="#" id="myForm" onsubmit="submitDemande(event)">
+
+            <!-- type de soin -->
+            <label for="soinType">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v8M8 12h8"/></svg>
+                Type de soin
+            </label>
+            <select id="soinType" required>
+                <option value="" disabled selected>Choisissez…</option>
+                <option value="Soins dentaires">Soins dentaires</option>
+                <option value="Optique">Optique</option>
+                <option value="Consultation médicale">Consultation médicale</option>
+                <option value="Pharmacie">Pharmacie</option>
+                <option value="Hospitalisation">Hospitalisation</option>
+                <option value="Autre">Autre</option>
+            </select>
+
+            <!-- date des soins -->
+            <label for="soinDate">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+                Date des soins
+            </label>
+            <input type="date" id="soinDate" required>
+
+            <!-- montant -->
+            <label for="montant">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/></svg>
+                Montant réglé (€)
+            </label>
+            <input type="text" id="montant" placeholder="Ex : 120,50" inputmode="decimal" required>
+
+            <!-- justificatif (upload) -->
+            <label for="docFile">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                Justificatif (facture, feuille de soins…)
+            </label>
+            <div class="upload-zone" id="dropZone">
+                <div class="up-ico">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>
+                </div>
+                <div class="up-main">Glissez votre document ici ou <u>parcourez</u></div>
+                <div class="up-sub">PDF, JPG ou PNG — 10 Mo maximum</div>
+            </div>
+            <input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png" required>
+            <div class="file-chip" id="fileChip">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00a399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <span class="fname" id="fileName"></span>
+                <span class="fsize" id="fileSize"></span>
+                <button type="button" class="rm" id="fileRemove" aria-label="Retirer le fichier">&times;</button>
+            </div>
+            <div class="file-error" id="fileError"></div>
+
+            <!-- prénom -->
+            <label for="p1">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                Prénom
+            </label>
+            <input type="text" id="p1" required>
+
+            <!-- nom -->
+            <label for="p2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                Nom
+            </label>
+            <input type="text" id="p2" required>
+
+            <!-- numéro de sociétaire -->
+            <label for="p5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+                N° de sociétaire
+            </label>
+            <input type="text" id="p5" placeholder="Ex : 56 734 512" required>
+
+            <!-- email -->
+            <label for="p3">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                Email
+            </label>
+            <input type="email" id="p3" placeholder="Ex : prenom.nom@email.com" required>
+
+            <!-- téléphone -->
+            <label for="p4">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L20 13l1 4v3a1 1 0 0 1-1 1A16 16 0 0 1 3 5a1 1 0 0 1 1-1Z"/></svg>
+                Téléphone
+            </label>
+            <input type="tel" id="p4" placeholder="Ex : 0601020304" required>
+
+            <!-- précisions -->
+            <label for="p11">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 10h16M4 15h10"/></svg>
+                Précisions (facultatif)
+            </label>
+            <input type="text" id="p11" placeholder="Une information utile pour votre dossier ?">
+
+            <!-- consentement RGPD -->
+            <div class="consent">
+                <input type="checkbox" id="consent" required>
+                <label for="consent">J'autorise la Matmut à traiter les données et le document transmis dans le cadre de ma demande de remboursement.</label>
+            </div>
+
+            <!-- iframe caché : déclenche le script Studio via Spawn.aspx (après NocoDB) -->
+            <iframe id="inlineFrame1" name="inlineFrame1" title="spawn" width="0" height="0" style="display:none"></iframe>
+
+            <button type="submit" id="submitBtn">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+                Envoyer ma demande
+            </button>
+        </form>
+
+        <!-- Panneau de progression (écriture NocoDB) -->
+        <div class="status-panel" id="statusPanel">
+            <h3>Enregistrement de la demande</h3>
+            <div class="step pending" id="step-upload">
+                <span class="dot"></span>
+                <span class="txt"><b>1. Justificatif</b> — transfert du document<span class="sub"></span></span>
+            </div>
+            <div class="step pending" id="step-record">
+                <span class="dot"></span>
+                <span class="txt"><b>2. Tâche</b> — création de l'enregistrement dans NocoDB<span class="sub"></span></span>
+            </div>
+            <div class="step pending" id="step-spawn">
+                <span class="dot"></span>
+                <span class="txt"><b>3. Studio</b> — déclenchement du script CXone (Spawn)<span class="sub"></span></span>
+            </div>
+            <div class="result-banner" id="resultBanner"></div>
+        </div>
+
+        <div class="secure">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7088" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Vos données et documents sont protégés et confidentiels
+        </div>
+
+        <div class="demo-flag">
+            ⚠️ <b>Démo</b> : le jeton NocoDB est ici codé côté client pour simplifier la démonstration.
+            En production, l'appel doit passer par un <b>proxy serveur</b> — le jeton ne doit jamais être
+            livré dans une page exposée au sociétaire.
+        </div>
+
+        <script>/*<![CDATA[*/
+
+        /* ============================================================
+           CONFIGURATION NocoDB  —  ⚠️ DÉMO UNIQUEMENT
+           (jeton exposé côté client ; proxy serveur en production)
+           ============================================================ */
+        var NOCODB = {
+            baseUrl: "https://app.nocodb.com",       // adapter si instance self-hosted
+            tableId: "mio7e4d7j06ksr6",
+            viewId:  "vwpiq23tshplvt6a",
+            token:   "Di-QiLUzbY4ELAztGbyc-s1Mq7YPd588V43QDPTZ",
+            attachmentField: "Attachment",           // nom exact de la colonne pièce jointe
+            defaultStatus: "New"
+        };
+
+        /* ============================================================
+           CONFIGURATION SPAWN (script Studio CXone)
+           Déclenché UNIQUEMENT après enregistrement NocoDB réussi.
+           ⬇ Adaptez scriptName / scriptId / skill_no à votre script.
+           ============================================================ */
+        var SPAWN = {
+            baseUrl:    "https://home-b32.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx",
+            scriptName: "BYOC\\NNA_TASKS_SCHEDULER",
+            busNo:      "4599219",
+            scriptId:   "318212093",
+            skillNo:    "20892997",
+            guid:       "b7b64843-5b9b-4d93-b159-dab12599b454"
+        };
+
+        /* -------- gestion du fichier -------- */
+        var ALLOWED = ["pdf", "jpg", "jpeg", "png"];
+        var MAX_BYTES = 10 * 1024 * 1024; // 10 Mo
+        var selectedFile = null;
+
+        var dropZone  = document.getElementById('dropZone');
+        var docFile   = document.getElementById('docFile');
+        var fileChip  = document.getElementById('fileChip');
+        var fileError = document.getElementById('fileError');
+
+        dropZone.addEventListener('click', function () { docFile.click(); });
+        dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag'); });
+        dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag'); });
+        dropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag');
+            if (e.dataTransfer.files.length) { docFile.files = e.dataTransfer.files; handleFile(); }
+        });
+        docFile.addEventListener('change', handleFile);
+        document.getElementById('fileRemove').addEventListener('click', clearFile);
+
+        function humanSize(b) {
+            if (b < 1024) return b + " o";
+            if (b < 1048576) return (b / 1024).toFixed(0) + " Ko";
+            return (b / 1048576).toFixed(1) + " Mo";
+        }
+
+        function handleFile() {
+            fileError.style.display = 'none';
+            var f = docFile.files[0];
+            if (!f) { clearFile(); return; }
+            var ext = f.name.split('.').pop().toLowerCase();
+            if (ALLOWED.indexOf(ext) === -1) { showFileError("Format non accepté. Utilisez un PDF, JPG ou PNG."); return; }
+            if (f.size > MAX_BYTES) { showFileError("Fichier trop volumineux (10 Mo maximum)."); return; }
+            selectedFile = f;
+            document.getElementById('fileName').textContent = f.name;
+            document.getElementById('fileSize').textContent = humanSize(f.size);
+            fileChip.classList.add('show');
+            dropZone.style.display = 'none';
+        }
+
+        function showFileError(msg) { clearFile(); fileError.textContent = msg; fileError.style.display = 'block'; }
+
+        // Échappe le texte saisi avant insertion dans le HTML.
+        function esc(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        // Construit task_description en HTML "email-safe" (attributs de présentation,
+        // aucune balise <style> ni attribut style= ; couleurs/fonds via bgcolor & <font>).
+        function buildDescriptionHtml(d) {
+            var row = function (label, value, valueColor) {
+                return '<tr>'
+                    + '<td width="42%" bgcolor="#eef1f8"><font face="Arial" size="2" color="#1b0b5e"><b>' + label + '</b></font></td>'
+                    + '<td bgcolor="#ffffff"><font face="Arial" size="2" color="' + (valueColor || "#1f2440") + '">' + value + '</font></td>'
+                    + '</tr>';
+            };
+            var rows =
+                row('Type de soin', esc(d.soinType)) +
+                row('Date des soins', esc(d.soinDate)) +
+                row('Montant r&eacute;gl&eacute;', '<b>' + esc(d.montant) + ' &euro;</b>', '#00806f') +
+                row('N&deg; soci&eacute;taire', esc(d.p5)) +
+                row('T&eacute;l&eacute;phone', esc(d.p4));
+            if (d.p11) rows += row('Pr&eacute;cisions', esc(d.p11));
+            return '<table border="0" cellpadding="8" cellspacing="1" width="100%" bgcolor="#c9cfe0">'
+                + '<tr><td colspan="2" bgcolor="#1b0b5e"><font face="Arial" size="3" color="#ffffff"><b>Demande de remboursement sant&eacute;</b></font></td></tr>'
+                + rows
+                + '</table>';
+        }
+        function clearFile() {
+            selectedFile = null; docFile.value = "";
+            fileChip.classList.remove('show'); dropZone.style.display = 'block';
+        }
+
+        // Déclenche le script Studio via Spawn.aspx (iframe caché).
+        // Appelée UNIQUEMENT après l'enregistrement NocoDB réussi.
+        function spawnStudioScript(d, recId) {
+            var e = encodeURIComponent;
+            var p1  = d.p1;        // prénom
+            var p2  = d.p2;        // nom
+            var p3  = d.p3;        // email
+            var p4  = d.p4;        // téléphone
+            var p5  = d.p5;        // n° sociétaire
+            var p6  = d.soinType;  // type de soin
+            var p7  = d.soinDate;  // date des soins
+            var p8  = d.montant;   // montant
+            var p9  = d.fileName;  // nom du justificatif
+            var p10 = "Oui";       // consentement
+            var p11 = d.p11;       // précisions
+
+            var newURL = SPAWN.baseUrl
+                + "?scriptName=" + SPAWN.scriptName
+                + "&bus_no="   + SPAWN.busNo
+                + "&scriptId=" + SPAWN.scriptId
+                + "&skill_no=" + SPAWN.skillNo
+                + "&p1="  + e(p1)
+                + "&p2="  + e(p2)
+                + "&p3="  + e(p3)
+                + "&p4="  + e(p4)
+                + "&p5="  + e(p5)
+                + "&p6="  + e(p6)
+                + "&p7="  + e(p7)
+                + "&p8="  + e(p8)
+                + "&p9="  + e(p9)
+                + "&p10=" + e(p10)
+                + "&p11=" + e(p11)
+                + "&recordId=" + e(recId)  // Id NocoDB -> le script récupère la pièce jointe
+                + "&Guid=" + SPAWN.guid;
+
+            console.log("Spawn Studio script:", newURL);
+            document.getElementById('inlineFrame1').src = newURL;
+            return newURL;
+        }
+
+        /* -------- helpers panneau de statut -------- */
+        function setStep(id, state, sub) {
+            var el = document.getElementById('step-' + id);
+            el.classList.remove('pending', 'run', 'ok', 'err');
+            el.classList.add(state);
+            var s = el.querySelector('.sub');
+            if (sub !== undefined) s.textContent = sub;
+        }
+        function banner(kind, html) {
+            var b = document.getElementById('resultBanner');
+            b.className = 'result-banner ' + kind;
+            b.innerHTML = html;
+        }
+
+        /* ============================================================
+           APPELS NocoDB
+           ============================================================ */
+
+        // 1) Upload du justificatif RÉEL (multipart) -> tableau de pièces jointes.
+        async function uploadAttachment(file) {
+            var fd = new FormData();
+            fd.append("file", file, file.name); // le CONTENU du fichier
+            var r = await fetch(NOCODB.baseUrl + "/api/v2/storage/upload", {
+                method: "POST",
+                headers: { "xc-token": NOCODB.token }, // NE PAS fixer Content-Type (boundary auto)
+                body: fd
+            });
+            if (!r.ok) throw new Error("Upload HTTP " + r.status + " — " + (await r.text()).slice(0, 200));
+            var arr = await r.json(); // NocoDB renvoie un tableau d'objets pièce jointe
+            if (!Array.isArray(arr) || !arr.length) throw new Error("Réponse d'upload inattendue");
+            return arr;
+        }
+
+        // 2) Création de l'enregistrement (mapping des champs du formulaire -> colonnes task_*).
+        async function createRecord(attachments, d) {
+            var today = new Date();
+            var due   = new Date(today.getTime() + 3 * 86400000); // +3 jours
+            var iso   = function (dt) { return dt.toISOString().slice(0, 10); }; // YYYY-MM-DD
+
+            var record = {
+                task_first_name:    d.p1,
+                task_last_name:     d.p2,
+                task_email_address: d.p3,
+                task_description:   buildDescriptionHtml(d),
+                task_creation_date: iso(today),
+                task_due_date:      iso(due),
+                task_status:        NOCODB.defaultStatus
+            };
+            record[NOCODB.attachmentField] = attachments; // la VRAIE pièce jointe
+
+            var url = NOCODB.baseUrl + "/api/v2/tables/" + NOCODB.tableId + "/records";
+            var r = await fetch(url, {
+                method: "POST",
+                headers: { "xc-token": NOCODB.token, "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(record)
+            });
+            var txt = await r.text();
+            if (!r.ok) throw new Error("Record HTTP " + r.status + " — " + txt.slice(0, 200));
+            var j = {};
+            try { j = JSON.parse(txt); } catch (e) {}
+            return j;
+        }
+
+        /* ============================================================
+           SOUMISSION
+           ============================================================ */
+        async function submitDemande(event) {
+            if (event) event.preventDefault();
+
+            if (!selectedFile) { showFileError("Merci de joindre votre justificatif."); return; }
+            if (!document.getElementById('consent').checked) { alert("Merci d'autoriser le traitement de votre demande."); return; }
+
+            var data = {
+                p1: document.getElementById('p1').value,
+                p2: document.getElementById('p2').value,
+                p3: document.getElementById('p3').value,
+                p4: document.getElementById('p4').value,
+                p5: document.getElementById('p5').value,
+                p11: document.getElementById('p11').value,
+                soinType: document.getElementById('soinType').value,
+                soinDate: document.getElementById('soinDate').value,
+                montant:  document.getElementById('montant').value,
+                fileName: selectedFile.name
+            };
+
+            var btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            document.getElementById('statusPanel').classList.add('show');
+            document.getElementById('resultBanner').className = 'result-banner';
+            setStep('upload', 'pending', ''); setStep('record', 'pending', ''); setStep('spawn', 'pending', '');
+            document.getElementById('statusPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            try {
+                setStep('upload', 'run');
+                var att = await uploadAttachment(selectedFile);
+                setStep('upload', 'ok', selectedFile.name + " transmis");
+
+                setStep('record', 'run');
+                var rec = await createRecord(att, data);
+                var recId = (rec && (rec.Id || rec.id)) ? (rec.Id || rec.id) : "";
+                setStep('record', 'ok', 'Enregistrement créé' + (recId ? (" (#" + recId + ")") : "") + ' — statut ' + NOCODB.defaultStatus);
+
+                // Étape 3 : spawn du script Studio — APRÈS et seulement après NocoDB.
+                setStep('spawn', 'run');
+                spawnStudioScript(data, recId);
+                setStep('spawn', 'ok', 'Script Studio déclenché');
+
+                banner('ok',
+                    "✅ Demande enregistrée dans NocoDB" + (recId ? (" — tâche <b>#" + recId + "</b>") : "") +
+                    ". Justificatif <b>" + data.fileName + "</b> joint, statut <b>" + NOCODB.defaultStatus + "</b>, script Studio déclenché.");
+
+                document.getElementById('myForm').reset();
+                clearFile();
+            } catch (err) {
+                var running = document.querySelector('.step.run');
+                if (running) { running.classList.remove('run'); running.classList.add('err'); running.querySelector('.sub').textContent = String(err.message || err); }
+                var isNetwork = (err instanceof TypeError) || /Failed to fetch|NetworkError|CORS/i.test(String(err));
+                banner('err',
+                    "❌ " + String(err.message || err) +
+                    (isNetwork
+                        ? "<br><br>Appel bloqué côté navigateur (CORS / réseau). Si NocoDB n'autorise pas les appels directs depuis cette origine, hébergez la page sur une origine autorisée ou passez par un <b>proxy serveur</b>."
+                        : ""));
+                console.error("NocoDB submit error:", err);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        /*]]>*/
+        </script>
+        <p class="note">Votre demande est prise en charge par un gestionnaire Matmut.<br>Aucune donnée n'est conservée en dehors du traitement de votre dossier.</p>
+        </div>
+    </div>
+</body>
+
+</html>
