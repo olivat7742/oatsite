@@ -629,10 +629,10 @@
             var p2  = d.p2;        // nom
             var p3  = d.p3;        // email
             var p4  = d.p4;        // téléphone
-            //var p5  = d.p5;        // n° sociétaire
+            var p5  = d.p5;        // n° sociétaire
             var p6  = d.sousTheme; // sous-thème (remplace l'ancien "type de soin")
             var p12 = d.domaine;   // domaine
-            var p5 = d.theme;     // thème
+            var p13 = d.theme;     // thème
             var p7  = d.soinDate;  // date des soins
             var p8  = d.montant;   // montant
             var p9  = d.fileName;  // nom du justificatif
@@ -656,7 +656,7 @@
                 + "&p10=" + e(p10)
                 + "&p11=" + e(p11)
                 + "&p12=" + e(p12)
-               // + "&p13=" + e(p13)
+                + "&p13=" + e(p13)
                 + "&recordId=" + e(recId)  // Id NocoDB -> le script récupère la pièce jointe
                 + "&Guid=" + SPAWN.guid;
 
@@ -711,7 +711,9 @@
                 task_description:   buildDescriptionHtml(d),
                 task_creation_date: iso(today),
                 task_due_date:      iso(due),
-                task_status:        NOCODB.defaultStatus
+                task_status:        NOCODB.defaultStatus,
+                Theme:              d.theme,
+                SousTheme:          d.sousTheme
             };
             record[NOCODB.attachmentField] = attachments; // la VRAIE pièce jointe
 
