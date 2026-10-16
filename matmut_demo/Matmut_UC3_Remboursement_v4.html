@@ -376,14 +376,17 @@
             <input type="date" id="soinDate" required>
             </div>
 
-            <!-- montant -->
+            <!-- montant (masqué si Domaine = Indemnisation) -->
+            <div id="montantBlock">
             <label for="montant">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/></svg>
                 Montant réglé (€)
             </label>
             <input type="text" id="montant" placeholder="Ex : 120,50" inputmode="decimal" required>
+            </div>
 
-            <!-- justificatif (upload) -->
+            <!-- justificatif (upload) — masqué si Domaine = Indemnisation -->
+            <div id="docBlock">
             <label for="docFile">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00bfb3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
                 Justificatif (facture, feuille de soins…)
@@ -403,6 +406,7 @@
                 <button type="button" class="rm" id="fileRemove" aria-label="Retirer le fichier">&times;</button>
             </div>
             <div class="file-error" id="fileError"></div>
+            </div>
 
             <!-- prénom -->
             <label for="p1">
@@ -550,13 +554,18 @@
             sel.disabled = !values.length;
         }
 
-        // "Date des soins" n'a de sens que pour la Santé : masquée (et non obligatoire) pour l'Indemnisation.
+        // "Date des soins", "Montant réglé" et le justificatif n'ont de sens que pour la Santé :
+        // masqués (et non obligatoires) pour l'Indemnisation.
+        function isIndemnisation() { return domaineSel.value === "Indemnisation"; }
         function toggleSoinDate() {
-            var hide = domaineSel.value === "Indemnisation";
-            var input = document.getElementById('soinDate');
-            document.getElementById('soinDateBlock').style.display = hide ? 'none' : '';
-            input.required = !hide;
-            if (hide) input.value = "";
+            var hide = isIndemnisation();
+            [['soinDateBlock', 'soinDate'], ['montantBlock', 'montant'], ['docBlock', 'docFile']].forEach(function (pair) {
+                var input = document.getElementById(pair[1]);
+                document.getElementById(pair[0]).style.display = hide ? 'none' : '';
+                input.required = !hide;
+                if (hide) input.value = "";
+            });
+            if (hide) { clearFile(); document.getElementById('fileError').style.display = 'none'; }
         }
 
         function fillThemes() {
@@ -640,7 +649,7 @@
                 row('Th&egrave;me', esc(d.theme)) +
                 row('Sous-th&egrave;me', esc(d.sousTheme)) +
                 (d.soinDate ? row('Date des soins', esc(d.soinDate)) : '') +
-                row('Montant r&eacute;gl&eacute;', '<b>' + esc(d.montant) + ' &euro;</b>', '#00806f') +
+                (d.montant ? row('Montant r&eacute;gl&eacute;', '<b>' + esc(d.montant) + ' &euro;</b>', '#00806f') : '') +
                 row('N&deg; soci&eacute;taire', esc(d.p5)) +
                 row('T&eacute;l&eacute;phone', esc(d.p4));
             if (d.p11) rows += row('Pr&eacute;cisions', esc(d.p11));
@@ -662,13 +671,13 @@
             var p2  = d.p2;        // nom
             var p3  = d.p3;        // email
             var p4  = d.p4;        // téléphone
-            var p5  = d.p5;        // n° sociétaire
+           // var p5  = d.p5;        // n° sociétaire
             var p6  = d.sousTheme; // sous-thème (remplace l'ancien "type de soin")
-            var p12 = d.domaine;   // domaine
-            var p13 = d.theme;     // thème
+            var p9 = d.domaine;   // domaine p12
+            var p5 = d.theme;     // thème
             var p7  = d.soinDate;  // date des soins
             var p8  = d.montant;   // montant
-            var p9  = d.fileName;  // nom du justificatif
+           // var p9  = d.fileName;  // nom du justificatif
             var p10 = "Oui";       // consentement
             var p11 = d.p11;       // précisions
 
@@ -688,8 +697,8 @@
                 + "&p9="  + e(p9)
                 + "&p10=" + e(p10)
                 + "&p11=" + e(p11)
-                + "&p12=" + e(p12)
-                + "&p13=" + e(p13)
+              //  + "&p12=" + e(p12)
+               // + "&p13=" + e(p13)
                 + "&recordId=" + e(recId)  // Id NocoDB -> le script récupère la pièce jointe
                 + "&Guid=" + SPAWN.guid;
 
@@ -745,10 +754,11 @@
                 task_creation_date: iso(today),
                 task_due_date:      iso(due),
                 task_status:        NOCODB.defaultStatus,
+                Domaine:            d.domaine,
                 Theme:              d.theme,
                 SousTheme:          d.sousTheme
             };
-            record[NOCODB.attachmentField] = attachments; // la VRAIE pièce jointe
+            if (attachments) record[NOCODB.attachmentField] = attachments; // la VRAIE pièce jointe (absente pour l'Indemnisation)
 
             var url = NOCODB.baseUrl + "/api/v2/tables/" + NOCODB.tableId + "/records";
             var r = await fetch(url, {
@@ -769,7 +779,8 @@
         async function submitDemande(event) {
             if (event) event.preventDefault();
 
-            if (!selectedFile) { showFileError("Merci de joindre votre justificatif."); return; }
+            var needsDoc = !isIndemnisation();
+            if (needsDoc && !selectedFile) { showFileError("Merci de joindre votre justificatif."); return; }
             if (!document.getElementById('consent').checked) { alert("Merci d'autoriser le traitement de votre demande."); return; }
 
             var data = {
@@ -784,7 +795,7 @@
                 sousTheme: document.getElementById('sousTheme').value,
                 soinDate: document.getElementById('soinDate').value,
                 montant:  document.getElementById('montant').value,
-                fileName: selectedFile.name
+                fileName: (needsDoc && selectedFile) ? selectedFile.name : ""
             };
 
             var btn = document.getElementById('submitBtn');
@@ -795,9 +806,14 @@
             document.getElementById('statusPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             try {
-                setStep('upload', 'run');
-                var att = await uploadAttachment(selectedFile);
-                setStep('upload', 'ok', selectedFile.name + " transmis");
+                var att = null;
+                if (needsDoc) {
+                    setStep('upload', 'run');
+                    att = await uploadAttachment(selectedFile);
+                    setStep('upload', 'ok', selectedFile.name + " transmis");
+                } else {
+                    setStep('upload', 'ok', "Aucun justificatif demandé (Indemnisation)");
+                }
 
                 setStep('record', 'run');
                 var rec = await createRecord(att, data);
@@ -811,7 +827,8 @@
 
                 banner('ok',
                     "✅ Demande enregistrée dans NocoDB" + (recId ? (" — tâche <b>#" + recId + "</b>") : "") +
-                    ". Justificatif <b>" + data.fileName + "</b> joint, statut <b>" + NOCODB.defaultStatus + "</b>, script Studio déclenché.");
+                    (data.fileName ? (". Justificatif <b>" + data.fileName + "</b> joint") : "") +
+                    ", statut <b>" + NOCODB.defaultStatus + "</b>, script Studio déclenché.");
 
                 document.getElementById('myForm').reset();
                 clearFile();
