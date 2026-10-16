@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matmut · Priorisation des tâches (POC) — NiCE CXone</title>
+<style>
+  :root{
+    --violet:#6A2DC1; --violet-d:#4C1F8C; --violet-l:#8B5CE0;
+    --navy:#000069; --blue:#0091EA; --ink:#272733; --muted:#6b6b80;
+    --line:#e7e5f0; --bg:#f4f2fa; --card:#ffffff;
+    --green:#1f9d55; --amber:#f39c12; --red:#e2334d; --grey:#9aa0b4;
+    --shadow:0 1px 3px rgba(20,10,50,.08),0 6px 24px rgba(76,31,140,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Codec Pro",Arial,Helvetica,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+  a{color:var(--violet)}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 22px 60px}
+
+  /* Header */
+  header.top{background:linear-gradient(120deg,var(--violet) 0%,var(--violet-d) 62%,var(--navy) 100%);color:#fff}
+  .top-inner{max-width:1360px;margin:0 auto;padding:16px 22px;display:flex;align-items:center;gap:20px}
+  .logo{height:30px;display:flex;align-items:center}
+  .logo svg{height:30px;width:auto}
+  .logo svg path{fill:#fff !important}
+  .brand-div{width:1px;height:34px;background:rgba(255,255,255,.28)}
+  .app-title{display:flex;flex-direction:column;line-height:1.25}
+  .app-title b{font-size:16px;font-weight:700;letter-spacing:.2px}
+  .app-title span{font-size:11.5px;opacity:.85}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+        padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7dd67d;box-shadow:0 0 0 3px rgba(125,214,125,.25)}
+  .dot.demo{background:#ffcf5c;box-shadow:0 0 0 3px rgba(255,207,92,.25)}
+  .dot.err{background:#ff8a8a;box-shadow:0 0 0 3px rgba(255,138,138,.25)}
+  .btn{cursor:pointer;border:none;border-radius:9px;font-weight:600;font-size:13px;padding:9px 14px;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+  .btn:active{transform:translateY(1px)}
+  .btn-ghost{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.26)}
+  .btn-ghost:hover{background:rgba(255,255,255,.26)}
+  .btn-primary{background:var(--violet);color:#fff}
+  .btn-primary:hover{background:var(--violet-d)}
+  .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+  .btn-soft{background:#efeafc;color:var(--violet-d)}
+  .btn-soft:hover{background:#e4d9fb}
+  .btn-line{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn-line:hover{border-color:var(--violet-l);color:var(--violet-d)}
+
+  /* Feature banner */
+  .feat{margin-top:18px;background:linear-gradient(90deg,#f0e9fd,#faf7ff);border:1px solid #e4d9fb;border-left:5px solid var(--violet);
+        border-radius:12px;padding:13px 18px;display:flex;align-items:center;gap:14px}
+  .feat .star{width:34px;height:34px;flex:0 0 34px;border-radius:9px;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .feat b{color:var(--violet-d)}
+  .feat .tag{margin-left:auto;background:#fff;border:1px solid #e4d9fb;color:var(--violet-d);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .kpi .val{font-size:26px;font-weight:800;margin-top:6px;line-height:1}
+  .kpi .sub{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .kpi.accent .val{color:var(--violet)}
+  .kpi.warn .val{color:var(--amber)}
+  .kpi.hot .val{color:var(--red)}
+  .kpi.clickable{cursor:pointer;transition:.12s;position:relative}
+  .kpi.clickable:hover{border-color:var(--violet-l);transform:translateY(-1px)}
+  .kpi.clickable .lbl:after{content:"⛃";font-size:10px;margin-left:5px;opacity:.4}
+  .kpi.active{border-color:var(--violet);box-shadow:0 0 0 2px rgba(106,45,193,.28),var(--shadow)}
+  .kpi.active .lbl:after{content:"✕ filtre actif";font-size:9px;opacity:.9;color:var(--violet)}
+
+  /* Toolbar */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-top:18px}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--line);border-radius:9px;font-size:13px;outline:none}
+  .search input:focus{border-color:var(--violet-l)}
+  .search svg{position:absolute;left:10px;top:9px;opacity:.5}
+  select{padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff;outline:none;color:var(--ink)}
+  select:focus{border-color:var(--violet-l)}
+
+  /* Bulk bar */
+  .bulk{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:0 16px;max-height:0;overflow:hidden;opacity:0;transition:.25s;border-bottom:1px solid transparent}
+  .bulk.show{max-height:200px;opacity:1;padding:14px 16px;border-bottom:1px solid var(--line);background:#faf8ff}
+  .bulk .sel-count{font-weight:700;color:var(--violet-d)}
+  .bulk .grp{display:flex;align-items:center;gap:8px}
+  .bulk input[type=number]{width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px}
+  .bulk input[type=range]{width:160px;accent-color:var(--violet)}
+  .chip{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+  .chip:hover{border-color:var(--violet-l);color:var(--violet-d)}
+  .chip.hot:hover{border-color:var(--red);color:var(--red)}
+  .rules-lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-right:2px}
+
+  /* Table */
+  .tbl-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:1080px}
+  thead th{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:left;
+           padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fbfaff;position:sticky;top:0}
+  tbody td{padding:12px 14px;border-bottom:1px solid #f2f0f8;vertical-align:middle}
+  tbody tr:hover{background:#faf9ff}
+  tbody tr.sel{background:#f3edfe}
+  .cust{font-weight:600}
+  .type-ic{width:30px;height:30px;border-radius:8px;background:#eafaf0;color:var(--green);display:flex;align-items:center;justify-content:center}
+  .skill{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink);max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ch{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--muted)}
+  .status{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px}
+  .status .sd{width:8px;height:8px;border-radius:50%}
+  .st-closed .sd{background:var(--red)} .st-open .sd{background:var(--green)} .st-pending .sd{background:var(--amber)}
+  .st-resolved .sd{background:var(--blue)} .st-escalated .sd{background:var(--violet)} .st-new .sd{background:var(--grey)} .st-trashed .sd{background:#555}
+  /* inline status selector */
+  .statusSel{appearance:none;-webkit-appearance:none;border-radius:999px;border:1px solid var(--line);padding:5px 26px 5px 12px;
+    font-size:12.5px;font-weight:700;cursor:pointer;background-repeat:no-repeat;background-position:right 8px center;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");min-width:120px}
+  .statusSel:focus{outline:none;box-shadow:0 0 0 3px rgba(106,45,193,.15)}
+  .ss-closed{background-color:#fdeaed;color:#c62740;border-color:#f6c9d1}
+  .ss-open{background-color:#e7f7ee;color:#137a43;border-color:#bfe8d0}
+  .ss-pending{background-color:#fff3e0;color:#e07b00;border-color:#ffd9a3}
+  .ss-resolved{background-color:#e3f2fd;color:#0277bd;border-color:#bfe0f7}
+  .ss-escalated{background-color:#efeafc;color:#5b2ec0;border-color:#ddd0f7}
+  .ss-new{background-color:#eef0f6;color:#5b6178;border-color:#dde1ec}
+  .ss-trashed{background-color:#e9e9ee;color:#444;border-color:#d3d3db}
+  .st-lock{font-size:10px;color:var(--muted);margin-top:3px;white-space:nowrap}
+  .statusSel option{background:#fff;color:var(--ink);font-weight:600}
+  /* confirm modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,10,40,.5);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:70}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:430px;width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;animation:tin .16s}
+  .modal .mh{padding:18px 20px 6px;font-size:16px;font-weight:800}
+  .modal .mb{padding:4px 20px 18px;color:var(--muted);font-size:13.5px;line-height:1.5}
+  .modal .mf{padding:14px 20px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line)}
+  .btn-danger{background:var(--red);color:#fff} .btn-danger:hover{background:#c62740}
+  .date{white-space:nowrap;color:var(--ink)} .date small{color:var(--muted)}
+  .res{color:var(--muted);white-space:nowrap}
+  /* aging */
+  .aging{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;white-space:nowrap;padding:3px 9px;border-radius:999px}
+  .a-hi{background:#fdeaed;color:#c62740} .a-mid{background:#fff3e0;color:#e07b00}
+  .a-low{background:#e3f2fd;color:#0277bd} .a-min{background:#eef0f6;color:#5b6178} .a-na{background:transparent;color:var(--muted)}
+  th.sortable{cursor:pointer;user-select:none} th.sortable:hover{color:var(--violet-d)}
+  th.sortable .car{opacity:.35;margin-left:3px} th.sortable.act .car{opacity:1;color:var(--violet)}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--violet);cursor:pointer}
+
+  /* Priority cell */
+  .prio-wrap{display:flex;flex-direction:column;gap:5px;min-width:150px}
+  .prio-top{display:flex;align-items:center;gap:8px}
+  .pbadge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .p-norm{background:#eef0f6;color:#5b6178} .p-low{background:#e3f2fd;color:#0277bd}
+  .p-mid{background:#fff3e0;color:#e07b00} .p-high{background:#fdeaed;color:#c62740}
+  .pval{font-weight:700;font-size:12px;color:var(--ink)}
+  .pbar{height:6px;border-radius:6px;background:#eee;overflow:hidden}
+  .pbar i{display:block;height:100%;border-radius:6px}
+  .prio-edit{display:none;align-items:center;gap:6px}
+  .prio-edit input{width:72px;padding:6px 8px;border:1px solid var(--violet-l);border-radius:7px;font-size:12px}
+  .icon-btn{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;font-size:12px;line-height:1}
+  .icon-btn:hover{border-color:var(--violet-l);color:var(--violet-d)}
+  .row-saving{opacity:.5;pointer-events:none}
+
+  /* Footer / meta */
+  .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;color:var(--muted);font-size:12px}
+  .foot .rt{margin-left:auto}
+  .empty{padding:50px;text-align:center;color:var(--muted)}
+
+  /* Config drawer */
+  .drawer-bg{position:fixed;inset:0;background:rgba(20,10,40,.45);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .drawer-bg.show{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;background:#fff;box-shadow:-10px 0 40px rgba(0,0,0,.2);
+          transform:translateX(100%);transition:.25s;z-index:50;display:flex;flex-direction:column}
+  .drawer.show{transform:translateX(0)}
+  .drawer h3{margin:0;font-size:16px}
+  .drawer .dh{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+  .drawer .db{padding:18px 20px;overflow:auto}
+  .fld{margin-bottom:14px}
+  .fld label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  .fld input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;font-family:ui-monospace,monospace}
+  .note{font-size:12px;background:#fff7e6;border:1px solid #ffe3a3;color:#7a5b00;border-radius:10px;padding:11px 13px;line-height:1.5}
+  .df{padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+
+  /* Toast */
+  #toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:9px;align-items:center}
+  .toast{background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.25);display:flex;gap:9px;align-items:center;animation:tin .2s}
+  .toast.ok{background:#127a43} .toast.err{background:#b3243b} .toast.info{background:var(--violet-d)}
+  @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+  .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="logo" title="Matmut"><svg width="211" height="38" viewBox="0 0 211 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M61.5748 10.0212H56.8202C56.5103 10.0212 56.3037 10.2277 56.3037 10.5376V14.2041C56.3037 14.4623 55.9423 14.6172 55.7873 14.2557C54.3414 11.054 52.3237 9.50107 49.3285 9.50107C44.0058 9.50107 39.668 14.2557 39.668 21.7437C39.668 29.2316 44.0058 34.1412 49.122 34.1412C51.9106 34.1412 53.8729 32.9018 55.7873 29.3865C55.9423 29.0767 56.3037 29.1283 56.3037 29.4382V33.1047C56.3037 33.4145 56.5103 33.6211 56.8202 33.6211H61.5748C61.8847 33.6211 62.0912 33.4145 62.0912 33.1047V10.5376C62.0912 10.2277 61.8847 10.0212 61.5748 10.0212ZM56.3037 22.2638C56.3037 27.948 53.7217 30.2718 50.981 30.2718C47.9342 30.2718 45.5034 27.3799 45.5034 21.7474C45.5034 16.5796 47.9305 13.3778 50.981 13.3778C53.718 13.3778 56.3037 15.9599 56.3037 21.3342V22.2638Z" fill="#000069"/>
+<path d="M82.2429 26.9151C81.2101 29.1357 79.8158 30.2718 78.06 30.2718C76.3042 30.2718 75.2714 29.1873 75.2714 26.7085V13.2265H82.195C82.5048 13.2265 82.7114 13.02 82.7114 12.7101V10.5412C82.7114 10.2314 82.5048 10.0248 82.195 10.0248H75.2714V4.07871C75.2714 3.66558 75.0648 3.40738 74.5484 3.51066L70.2622 4.23363C69.9524 4.28527 69.7458 4.4402 69.7458 4.80168V10.0211H65.8211C65.5112 10.0211 65.3047 10.2277 65.3047 10.5375V12.7064C65.3047 13.0163 65.5112 13.2229 65.8211 13.2229H69.4876V26.2401C69.4876 31.7177 72.741 34.1448 76.3595 34.1448C79.9781 34.1448 82.2503 31.7693 83.6963 27.4278C83.9545 26.6532 82.6118 26.1368 82.2503 26.9114" fill="#000069"/>
+<path d="M29.0304 9.50479C25.6221 9.50479 22.9847 11.8286 21.1257 15.3439C20.9707 15.6538 20.6093 15.6538 20.5576 15.2923C20.0412 11.8286 17.9239 9.50479 14.6152 9.50479C11.3065 9.50479 8.93101 11.8803 7.07194 15.1373C6.86537 15.4988 6.50388 15.3956 6.50388 15.0857V10.5376C6.50388 10.2278 6.29732 10.0212 5.98747 10.0212H1.49102C1.18117 10.0212 0.974609 10.2278 0.974609 10.5376V33.1158C0.974609 33.4256 1.18117 33.6322 1.49102 33.6322H6.24568C6.55553 33.6322 6.76209 33.4256 6.76209 33.1158V23.3003C6.76209 16.6866 9.86055 13.3816 12.343 13.3816C14.2021 13.3816 15.2349 14.5693 15.2349 17.4096V33.1158C15.2349 33.4256 15.4415 33.6322 15.7513 33.6322H20.506C20.8158 33.6322 21.0224 33.4256 21.0224 33.1158V23.3003C21.0224 16.6866 24.1208 13.3816 26.6033 13.3816C28.4624 13.3816 29.4952 14.5693 29.4952 17.4096V33.1158C29.4952 33.4256 29.7018 33.6322 30.0116 33.6322H34.7663C35.0761 33.6322 35.2827 33.4256 35.2827 33.1158V16.48C35.2827 12.0905 32.5973 9.50479 29.0304 9.50479Z" fill="#000069"/>
+<path d="M165.678 26.9151C164.645 29.1357 163.251 30.2718 161.495 30.2718C159.74 30.2718 158.707 29.1873 158.707 26.7085V13.2265H165.63C165.94 13.2265 166.147 13.02 166.147 12.7101V10.5412C166.147 10.2314 165.94 10.0248 165.63 10.0248H158.707V4.07871C158.707 3.66558 158.5 3.40738 157.984 3.51066L153.694 4.23363C153.384 4.28527 153.177 4.4402 153.177 4.80168V10.0211H149.253C148.943 10.0211 148.736 10.2277 148.736 10.5375V12.7064C148.736 13.0163 148.943 13.2229 149.253 13.2229H152.919V26.2401C152.919 31.7177 156.173 34.1448 159.791 34.1448C163.41 34.1448 165.682 31.7693 167.128 27.4278C167.386 26.6532 166.043 26.1368 165.682 26.9114" fill="#000069"/>
+<path d="M145.322 10.0212H140.568C140.258 10.0212 140.051 10.2278 140.051 10.5376V20.3531C140.051 26.9668 136.953 30.2719 134.47 30.2719C132.611 30.2719 131.578 29.0841 131.578 26.2402V10.5376C131.578 10.2278 131.372 10.0212 131.062 10.0212H126.307C125.998 10.0212 125.791 10.2278 125.791 10.5376V27.6898C125.791 31.6145 128.528 34.1486 132.198 34.1486C135.452 34.1486 137.831 31.9281 139.69 28.4128C139.845 28.1029 140.258 28.1546 140.258 28.5161V33.1158C140.258 33.4256 140.464 33.6322 140.774 33.6322H145.322C145.632 33.6322 145.839 33.4256 145.839 33.1158V10.5376C145.839 10.2278 145.632 10.0212 145.322 10.0212Z" fill="#000069"/>
+<path d="M114.482 9.50479C111.074 9.50479 108.436 11.8286 106.577 15.3439C106.422 15.6538 106.061 15.6538 106.009 15.2923C105.493 11.8286 103.375 9.50479 100.067 9.50479C96.7579 9.50479 94.3824 11.8803 92.5233 15.1373C92.3168 15.4988 91.9553 15.3956 91.9553 15.0857V10.5376C91.9553 10.2278 91.7487 10.0212 91.4389 10.0212H86.9461C86.6363 10.0212 86.4297 10.2278 86.4297 10.5376V33.1158C86.4297 33.4256 86.6363 33.6322 86.9461 33.6322H91.7008C92.0106 33.6322 92.2172 33.4256 92.2172 33.1158V23.3003C92.2172 16.6866 95.3156 13.3816 97.7981 13.3816C99.6572 13.3816 100.69 14.5693 100.69 17.4096V33.1158C100.69 33.4256 100.897 33.6322 101.206 33.6322H105.961C106.271 33.6322 106.477 33.4256 106.477 33.1158V23.3003C106.477 16.6866 109.576 13.3816 112.058 13.3816C113.917 13.3816 114.95 14.5693 114.95 17.4096V33.1158C114.95 33.4256 115.157 33.6322 115.467 33.6322H120.221C120.531 33.6322 120.738 33.4256 120.738 33.1158V16.48C120.738 12.0905 118.052 9.50479 114.486 9.50479" fill="#000069"/>
+<path d="M186.185 1.83571C185.989 6.27683 184.654 8.64863 178.188 9.78473C177.988 9.83268 177.893 9.98023 177.893 10.1315C177.893 10.2827 177.941 10.4266 178.287 10.5261C180.168 11.168 182.245 11.5627 184.064 11.5627C191.5 11.5627 195.222 7.31703 195.222 0.555747C195.222 0.356561 195.122 0.209015 194.875 0.209015C190.976 0.209015 187.372 0.998384 186.531 1.39307C186.336 1.49266 186.185 1.54061 186.185 1.83571Z" fill="#0391DF"/>
+<path d="M210.022 15.904C210.022 14.8897 209.852 11.3191 208.639 8.69644C208.539 8.50094 208.44 8.4493 208.292 8.4493C208.192 8.4493 208.045 8.49725 207.897 8.54889C206.96 8.84399 205.138 8.94358 204.253 8.94358C200.649 8.94358 198.086 7.58985 196.898 4.45081C196.798 4.25163 196.702 4.20367 196.603 4.20367C196.455 4.20367 196.308 4.30327 196.256 4.49877C196.108 5.18854 196.061 5.88201 196.061 6.52383C196.061 13.1634 200.011 16.7414 205.983 16.7414C207.067 16.7414 208.89 16.5459 209.775 16.2471C209.922 16.1991 210.022 16.0516 210.022 15.9004" fill="#0DD3B6"/>
+<path d="M171.87 19.1133C178.93 19.5079 180.708 22.6691 180.855 27.8C180.855 28.0471 181.003 28.1947 181.202 28.1947C181.401 28.1947 181.497 28.0951 181.597 27.9475C183.349 25.3692 184.064 22.9605 184.064 20.5924C184.064 15.657 179.31 11.0093 172.511 10.67C172.264 10.67 172.117 10.7695 172.017 11.0167C171.176 13.2741 171.069 17.5935 171.375 18.7665C171.423 18.962 171.571 19.1133 171.87 19.1133Z" fill="#FCBA00"/>
+<path d="M186.58 37.2798C188.701 33.5764 191.419 31.8022 194.529 31.8022C195.912 31.8022 196.901 32.1268 197.786 32.5436C197.985 32.6432 198.28 32.396 198.133 32.0973C196.296 28.3754 192.851 26.568 189.346 26.568C186.038 26.568 182.268 28.4234 179.671 32.3444C179.571 32.492 179.523 32.5915 179.523 32.7391C179.523 32.8866 179.571 32.9862 179.719 33.1338C182.094 35.5093 185.2 37.0327 186.086 37.3794C186.233 37.4274 186.281 37.4274 186.333 37.4274C186.432 37.4274 186.528 37.3794 186.58 37.2798Z" fill="#6A2DC1"/>
+<path d="M206.92 18.523C206.92 18.3754 206.724 18.1283 206.378 18.2758C200.741 20.1054 198.576 24.0154 198.576 27.704C198.576 30.0426 199.908 32.5915 202.18 34.8637C202.328 35.0112 202.427 35.0592 202.575 35.0592C202.722 35.0592 202.833 35.0038 202.969 34.9116C204.013 34.2145 207.112 32.1046 208.204 29.8766C208.351 29.5815 208.403 29.3934 208.403 29.2828C208.403 29.1684 208.366 29.0983 208.204 28.936C206.285 27.136 204.6 25.5794 204.6 23.3072C204.6 21.7026 205.315 20.2714 206.772 18.8144C206.92 18.6668 206.92 18.6152 206.92 18.5193" fill="#F42A5F"/>
+</svg>
+</div>
+    <div class="brand-div"></div>
+    <div class="app-title">
+      <b>Priorisation des tâches</b>
+      <span>Console de supervision · canal <code>TASKS</code> · POC · propulsé par NiCE CXone</span>
+    </div>
+    <div class="top-right">
+      <span class="pill"><span id="connDot" class="dot demo"></span><span id="connTxt">Connexion…</span></span>
+      <button class="btn btn-ghost" id="btnRefresh" title="Rafraîchir">↻ Rafraîchir</button>
+      <button class="btn btn-ghost" id="btnCfg" title="Code d'accès">🔑 Code d'accès</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="feat">
+    <div class="star">★</div>
+    <div>
+      <b>Gestion des priorités en masse</b> — repriorisez une ou plusieurs tâches en un clic, ou appliquez une règle métier.
+      <span style="color:var(--muted)"> Cette capacité n'existe pas dans la liste de tâches native CXone.</span>
+    </div>
+    <span class="tag">NOUVEAU vs CXone natif</span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="q" placeholder="Rechercher un client, une compétence, un ID…">
+      </div>
+      <select id="fSkill"><option value="">Toutes les compétences</option></select>
+      <select id="fStatus"><option value="">Tous les statuts</option></select>
+      <select id="fPrio">
+        <option value="">Toutes priorités</option>
+        <option value="norm">Normale (0)</option>
+        <option value="low">Basse (1-300)</option>
+        <option value="mid">Élevée (301-700)</option>
+        <option value="high">Urgente (701-1000)</option>
+      </select>
+      <select id="fAging" title="Filtrer par ancienneté (Aging)">
+        <option value="">Aging : tous</option>
+        <option value="7">≥ 7 jours</option>
+        <option value="3">≥ 3 jours</option>
+        <option value="1">≥ 1 jour</option>
+        <option value="0">≥ 0 (aujourd'hui)</option>
+        <option value="neg">Négatif (expiré)</option>
+      </select>
+      <button class="btn btn-soft" id="btnOldest" title="Trier par ancienneté décroissante">↓ Plus anciennes d'abord</button>
+    </div>
+
+    <div class="bulk" id="bulk">
+      <span class="sel-count"><span id="selN">0</span> sélectionnée(s)</span>
+      <div class="grp">
+        <label style="font-size:12px;color:var(--muted);font-weight:700">Priorité</label>
+        <input type="range" id="prioRange" min="0" max="1000" step="10" value="700" oninput="prioNum.value=this.value">
+        <input type="number" id="prioNum" min="0" max="1000" value="700" oninput="prioRange.value=this.value">
+        <button class="btn btn-primary" id="btnApply">Appliquer à la sélection</button>
+      </div>
+      <div class="grp" style="margin-left:8px">
+        <span class="rules-lbl">Règles rapides</span>
+        <span class="chip hot" data-rule="sinistre">🚨 Sinistres → Urgent (900)</span>
+        <span class="chip" data-rule="gest">⚡ Gestion → Élevée (500)</span>
+        <span class="chip" data-rule="reset">↺ Réinitialiser (0)</span>
+      </div>
+      <div class="grp" style="margin-left:8px;padding-left:14px;border-left:1px solid var(--line)">
+        <span class="rules-lbl">Statut</span>
+        <select id="bulkStatus">
+          <option value="closed">Clôturer (closed)</option>
+          <option value="pending">En attente (pending)</option>
+          <option value="open">Ouvrir (open)</option>
+          <option value="resolved">Résolu (resolved)</option>
+          <option value="escalated">Escaladé (escalated)</option>
+        </select>
+        <button class="btn btn-soft" id="btnBulkStatus">Appliquer le statut</button>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px"><input type="checkbox" id="chkAll"></th>
+            <th style="width:44px">Type</th>
+            <th>Nom du client</th>
+            <th>Compétence</th>
+            <th>Canal</th>
+            <th>Statut</th>
+            <th class="sortable" data-sort="createdAt">Date de création<span class="car"></span></th>
+            <th class="sortable" data-sort="activation">Date d'activation<span class="car"></span></th>
+            <th class="sortable" data-sort="aging">Aging <span title="Date d'activation − Date de création" style="color:var(--violet)">★</span><span class="car"></span></th>
+            <th>Temps de résol.</th>
+            <th class="sortable" style="width:210px" data-sort="priority">Priorité <span title="Absente de la liste native CXone" style="color:var(--violet)">★</span><span class="car"></span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="foot">
+      <span id="countTxt">—</span>
+      <span class="rt">Dernière actualisation : <b id="lastUpd">—</b></span>
+    </div>
+  </div>
+
+  <p style="color:var(--muted);font-size:12px;margin-top:16px">
+    POC Matmut — NiCE CXone Digital (DFO) API · tenant <b>EU1</b>.
+    Priorité écrite via <code>PUT /dfo/3.0/contacts/{id}</code> (champ <code>routingQueuePriority</code>, max 1000).
+  </p>
+</div>
+
+<!-- Config drawer -->
+<div class="drawer-bg" id="drawerBg"></div>
+<div class="drawer" id="drawer">
+  <div class="dh"><h3>Configuration API</h3><button class="btn btn-line" id="btnCloseCfg" style="margin-left:auto">✕</button></div>
+  <div class="db">
+    <div id="cfgDirect">
+      <div class="note" style="margin-bottom:16px">Les identifiants sont pré-remplis pour le POC. Ils restent dans votre navigateur (aucun serveur tiers). Ne publiez pas ce fichier tel quel : utilisez la version AWS (proxy Lambda).</div>
+      <div class="fld"><label>Token URL</label><input id="cfgTokenUrl"></div>
+      <div class="fld"><label>API Base (DFO)</label><input id="cfgApiBase"></div>
+      <div class="fld"><label>Channel ID (TASKS)</label><input id="cfgChannel"></div>
+      <div class="fld"><label>Access Key ID</label><input id="cfgAk"></div>
+      <div class="fld"><label>Secret Key</label><input id="cfgSk" type="password"></div>
+      <div class="fld"><label>Client ID</label><input id="cfgCid"></div>
+      <div class="fld"><label>Client Secret</label><input id="cfgCs" type="password"></div>
+    </div>
+    <div id="cfgProxy" style="display:none">
+      <div class="note" style="margin-bottom:16px">Les identifiants CXone sont conservés côté serveur (AWS Lambda) et ne transitent jamais par cette page. Saisissez le code d'accès qui vous a été communiqué.</div>
+      <div class="fld"><label>Code d'accès</label><input id="cfgKey" type="password" autocomplete="current-password"></div>
+    </div>
+  </div>
+  <div class="df">
+    <button class="btn btn-primary" id="btnConnect" style="flex:1">Se connecter & charger</button>
+    <button class="btn btn-line" id="btnDemo">Mode démo</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="mh" id="modalTitle"></div>
+    <div class="mb" id="modalBody"></div>
+    <div class="mf">
+      <button class="btn btn-line" id="modalCancel">Annuler</button>
+      <button class="btn btn-primary" id="modalOk">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+const CFG = {
+  /* Version PUBLIQUE : aucun identifiant ici. Tous les appels passent par le proxy AWS Lambda,
+     qui détient les identifiants CXone (variables d'environnement) et impose le canal TASKS. */
+  proxy: "https://tgxiw47l27kj3ljkf7i32zdmey0jbmfc.lambda-url.us-east-2.on.aws/",
+  channelName: "TASKS",
+  activationField: "task_due_date"
+};
+const SNAPSHOT = [{"id": "713429499290", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T12:44:45+00:00", "statusUpdatedAt": "2026-08-05T12:52:38+00:00", "priority": 30, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713429499242", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T12:44:43+00:00", "statusUpdatedAt": "2026-08-05T12:47:49+00:00", "priority": 30, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713429499208", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T12:44:41+00:00", "statusUpdatedAt": "2026-08-05T12:47:51+00:00", "priority": 30, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429384259", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:48:28+00:00", "statusUpdatedAt": "2026-08-05T09:49:01+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713429383967", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:47:47+00:00", "statusUpdatedAt": "2026-08-05T09:48:25+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713429381402", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:41:26+00:00", "statusUpdatedAt": "2026-08-05T09:43:12+00:00", "priority": 7, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429380375", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:38:39+00:00", "statusUpdatedAt": "2026-08-05T09:39:35+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429369785", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:08:30+00:00", "statusUpdatedAt": "2026-08-05T09:09:36+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429367417", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T09:02:57+00:00", "statusUpdatedAt": "2026-08-05T09:03:53+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429353978", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T08:06:53+00:00", "statusUpdatedAt": "2026-08-05T09:00:25+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429350380", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:55:31+00:00", "statusUpdatedAt": "2026-08-05T09:00:25+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429348656", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:45:21+00:00", "statusUpdatedAt": "2026-08-05T07:51:13+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429348504", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:44:28+00:00", "statusUpdatedAt": "2026-08-05T07:51:41+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429348434", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:44:08+00:00", "statusUpdatedAt": "2026-08-05T07:51:42+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429348140", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:42:17+00:00", "statusUpdatedAt": "2026-08-05T07:51:14+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429348031", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:41:46+00:00", "statusUpdatedAt": "2026-08-05T07:51:15+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429347462", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:38:44+00:00", "statusUpdatedAt": "2026-08-05T07:51:17+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713429345602", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:29:10+00:00", "statusUpdatedAt": "2026-08-05T07:31:51+00:00", "priority": 1000, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713429345564", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:29:05+00:00", "statusUpdatedAt": "2026-08-05T07:31:51+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713429345551", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-05T07:29:03+00:00", "statusUpdatedAt": "2026-08-05T07:31:51+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713428486397", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:25:51+00:00", "statusUpdatedAt": "2026-08-04T17:30:08+00:00", "priority": 10, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713428486329", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:25:49+00:00", "statusUpdatedAt": "2026-08-04T17:31:09+00:00", "priority": 10, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713428486259", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:25:47+00:00", "statusUpdatedAt": "2026-08-04T17:31:10+00:00", "priority": 10, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713428479292", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:22:28+00:00", "statusUpdatedAt": "2026-08-04T17:22:40+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713428478941", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:22:19+00:00", "statusUpdatedAt": "2026-08-04T17:22:27+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713428478397", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:22:05+00:00", "statusUpdatedAt": "2026-08-04T17:22:18+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713428473650", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T17:19:56+00:00", "statusUpdatedAt": "2026-08-04T17:22:03+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713428309483", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T16:02:01+00:00", "statusUpdatedAt": "2026-08-04T17:14:46+00:00", "priority": 50, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713427935581", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:46:42+00:00", "statusUpdatedAt": "2026-08-04T12:46:58+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713427935138", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:46:23+00:00", "statusUpdatedAt": "2026-08-04T12:46:41+00:00", "priority": 170, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713427934492", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:45:52+00:00", "statusUpdatedAt": "2026-08-04T12:46:22+00:00", "priority": 4, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713427931104", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:43:28+00:00", "statusUpdatedAt": "2026-08-04T12:45:11+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713427931051", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:43:26+00:00", "statusUpdatedAt": "2026-08-04T12:45:11+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713427931007", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T12:43:24+00:00", "statusUpdatedAt": "2026-08-04T12:45:11+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713427870185", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:48:06+00:00", "statusUpdatedAt": "2026-08-04T11:48:22+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}, {"id": "713427869981", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:47:49+00:00", "statusUpdatedAt": "2026-08-04T11:48:05+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713427869513", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:47:14+00:00", "statusUpdatedAt": "2026-08-04T11:47:49+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713427867489", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:44:33+00:00", "statusUpdatedAt": "2026-08-04T11:45:07+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-14 15:45:00+00:00"}, {"id": "713427867457", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:44:31+00:00", "statusUpdatedAt": "2026-08-04T11:45:07+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-07 15:44:00+00:00"}, {"id": "713427867430", "customer": "Paul Durand", "skillId": 35673980, "skill": "NNA_DECLA_TASK_SINISTRE", "channel": "TASKS", "status": "closed", "createdAt": "2026-08-04T11:44:29+00:00", "statusUpdatedAt": "2026-08-04T11:45:07+00:00", "priority": 0, "maxPriority": 1000, "direction": "inbound", "activation": "2026-08-06 15:43:00+00:00"}];
+
+let TOKEN=null, LIVE=false, DATA=[], SELECTED=new Set(), SKILLMAP={};
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg,type='info',ms=2600){
+  const t=document.createElement('div');t.className='toast '+type;t.innerHTML=msg;$('toasts').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),250)},ms);
+}
+function prioTier(p){ if(p<=0)return['p-norm','Normale','#9aa0b4']; if(p<=300)return['p-low','Basse','#0091EA'];
+  if(p<=700)return['p-mid','Élevée','#f39c12']; return['p-high','Urgente','#e2334d']; }
+
+/* --- status lifecycle (CXone DFO). closed is terminal -> only trashed --- */
+const STATUS_LABEL={open:'Ouvert',new:'Nouveau',pending:'En attente',resolved:'Résolu',escalated:'Escaladé',closed:'Clôturé',trashed:'Corbeille'};
+const NEXT={
+  new:      ['open','pending','resolved','escalated','closed','trashed'],
+  open:     ['pending','resolved','escalated','closed','trashed'],
+  pending:  ['open','resolved','escalated','closed','trashed'],
+  resolved: ['open','escalated','closed','trashed'],
+  escalated:['open','resolved','closed','trashed'],
+  closed:   ['trashed'],
+  trashed:  []
+};
+const DESTRUCTIVE=new Set(['closed','trashed']);
+function statusCell(d){
+  const nexts=NEXT[d.status]||[];
+  if(!nexts.length){
+    return `<span class="status st-${d.status}"><span class="sd"></span>${esc(STATUS_LABEL[d.status]||d.status)}</span>`;
+  }
+  const opts=[`<option value="${d.status}" selected>${esc(STATUS_LABEL[d.status]||d.status)}</option>`]
+    .concat(nexts.map(s=>`<option value="${s}">→ ${esc(STATUS_LABEL[s]||s)}</option>`)).join('');
+  const lock=d.status==='closed'?'<div class="st-lock">🔒 Clôturé — non réouvrable</div>':'';
+  return `<select class="statusSel ss-${d.status}" data-id="${d.id}" data-cur="${d.status}" title="Changer le statut">${opts}</select>${lock}`;
+}
+function confirmModal(title,body,okLabel,danger){
+  return new Promise(res=>{
+    $('modalTitle').textContent=title; $('modalBody').textContent=body;
+    const ok=$('modalOk'); ok.textContent=okLabel||'Confirmer'; ok.className='btn '+(danger?'btn-danger':'btn-primary');
+    $('modalBg').classList.add('show');
+    const done=v=>{$('modalBg').classList.remove('show');ok.onclick=null;$('modalCancel').onclick=null;$('modalBg').onclick=null;res(v);};
+    ok.onclick=()=>done(true); $('modalCancel').onclick=()=>done(false);
+    $('modalBg').onclick=e=>{if(e.target===$('modalBg'))done(false);};
+  });
+}
+function fmtDate(iso){ if(!iso)return['—','']; const d=new Date(iso);
+  const dd=String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+'/'+String(d.getFullYear()).slice(2);
+  let h=d.getHours(),ap=h>=12?'PM':'AM'; h=h%12||12;
+  return [dd, h+':'+String(d.getMinutes()).padStart(2,'0')+' '+ap]; }
+function resTime(a,b){ if(!a||!b)return'—'; let s=Math.max(0,Math.round((new Date(b)-new Date(a))/1000));
+  if(s<60)return s+' sec'; if(s<3600)return Math.round(s/60)+' min'; const h=Math.floor(s/3600); return h+'h '+Math.round((s%3600)/60)+'m'; }
+/* Activation Date = custom field CFG.activationField ("2026-10-09 11:45:00+00:00") */
+function parseActivation(v){ if(!v)return null; const d=new Date(String(v).replace(' ','T')); return isNaN(d)?null:d; }
+function fmtActivation(v){ const d=parseActivation(v); if(!d)return['—','']; return fmtDate(d.toISOString()); }
+/* Aging = Activation Date - Date de Création, en jours (float, peut être négatif) */
+function agingDays(rec){ const a=parseActivation(rec.activation); if(!a||!rec.createdAt)return null;
+  const c=new Date(rec.createdAt); if(isNaN(c))return null; return (a-c)/86400000; }
+function fmtAging(rec){ const d=agingDays(rec); if(d==null)return['—','a-na']; const abs=Math.abs(d);
+  let txt; if(abs<1){ txt=Math.round(abs*24)+' h'; } else { const j=Math.floor(abs); const h=Math.round((abs-j)*24); txt=j+' j'+(h?(' '+h+' h'):''); }
+  if(d<0)txt='-'+txt; const cls=d>=7?'a-hi':d>=3?'a-mid':d>=1?'a-low':'a-min'; return [txt,cls]; }
+/* sort state */
+let SORT={key:'createdAt',dir:'desc'};
+function sortVal(r,k){ if(k==='aging')return agingDays(r);
+  if(k==='activation'){const d=parseActivation(r.activation);return d?d.getTime():null;}
+  if(k==='createdAt')return r.createdAt?new Date(r.createdAt).getTime():null;
+  if(k==='priority')return r.priority; return null; }
+/* KPI-card quick filters */
+let CARD='';
+function agingMaxVal(){ const a=DATA.map(agingDays).filter(v=>v!=null); return a.length?Math.max(...a):null; }
+function agingMatchesMax(r){ const mx=agingMaxVal(); if(mx==null)return false; const ag=agingDays(r); if(ag==null)return false;
+  return mx<1?Math.round(ag*24)===Math.round(mx*24):Math.round(ag)===Math.round(mx); }
+function toggleCard(k){ if(CARD===k){CARD='';} else { CARD=k;
+  $('q').value='';$('fSkill').value='';$('fStatus').value='';$('fPrio').value='';$('fAging').value='';
+  if(k==='agingmax'){ SORT={key:'aging',dir:'desc'}; } }
+  render(); }
+
+/* ---------- API ---------- */
+let APPKEY=''; try{ APPKEY=sessionStorage.getItem('matmutAppKey')||''; }catch(e){}
+async function getToken(){
+  const body=new URLSearchParams({grant_type:'password',username:CFG.ak,password:CFG.sk,client_id:CFG.cid,client_secret:CFG.cs});
+  const r=await fetch(CFG.tokenUrl,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+  if(!r.ok)throw new Error('Token '+r.status);
+  return (await r.json()).access_token;
+}
+/* Appel API : direct vers CXone (version locale) ou via le proxy Lambda (version publique) */
+async function api(method,path,body,retry=true){
+  const h={}; if(body)h['Content-Type']='application/json';
+  let url;
+  if(CFG.proxy){ url=CFG.proxy.replace(/\/$/,'')+path; h['x-app-key']=APPKEY; }
+  else { if(!TOKEN)TOKEN=await getToken(); url=CFG.apiBase+path; h.Authorization='Bearer '+TOKEN; }
+  const r=await fetch(url,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===401&&!CFG.proxy&&retry){ TOKEN=null; return api(method,path,body,false); }
+  if(!r.ok){ let m='HTTP '+r.status; try{const j=await r.json(); m=(j.errors&&j.errors[0]&&j.errors[0].message)||j.message||m;}catch(e){}
+    const err=new Error(m); err.status=r.status; throw err; }
+  return r.json().catch(()=>null);
+}
+async function fetchQueues(){
+  try{ const d=await api('GET','/dfo/3.0/routing-queues?size=500'); ((d&&d.data)||[]).forEach(x=>SKILLMAP[x.skillId]=x.name);
+  }catch(e){}
+}
+async function fetchContacts(){
+  let out=[],scroll=null;
+  for(let i=0;i<20;i++){
+    const qs=new URLSearchParams();
+    if(!CFG.proxy)qs.append('channel[]',CFG.channel);   /* en mode proxy, le canal est imposé côté serveur */
+    if(scroll)qs.append('scrollToken',scroll);
+    const d=await api('GET','/dfo/3.0/contacts'+(qs.toString()?'?'+qs:''));
+    const rows=(d&&d.data)||[]; out=out.concat(rows); scroll=d&&d.scrollToken;
+    if(!rows.length||out.length>=(d.hits||0))break;
+  }
+  out.sort((a,b)=>String(b.createdAtWithMilliseconds||b.createdAt).localeCompare(String(a.createdAtWithMilliseconds||a.createdAt)));
+  const cf=(c,ident)=>{ const f=(c.customFields||[]).find(x=>x.ident===ident); return f?f.value:null; };
+  return out.map(c=>{ const au=c.authorEndUserIdentity||{};
+    return { id:c.id, customer:au.fullName||((au.firstName||'')+' '+(au.lastName||'')).trim()||'Client',
+      skillId:c.skillId, skill:SKILLMAP[c.skillId]||'Digital Task', channel:CFG.channelName, status:c.status,
+      createdAt:c.createdAt, statusUpdatedAt:c.statusUpdatedAt, priority:c.routingQueuePriority||0,
+      maxPriority:c.maximumPriority||1000, direction:c.direction, activation:cf(c,CFG.activationField) }; });
+}
+async function updatePriority(id,prio){ await api('PUT','/dfo/3.0/contacts/'+id,{routingQueuePriority:prio}); }
+async function changeStatus(id,status){ await api('PUT','/dfo/3.0/contacts/'+id+'/status',{status}); }
+
+/* ---------- load ---------- */
+function setConn(state){ const d=$('connDot'),t=$('connTxt');
+  if(state==='live'){d.className='dot';t.textContent='Connecté (live)';}
+  else if(state==='demo'){d.className='dot demo';t.textContent='Mode démo (données réelles)';}
+  else{d.className='dot err';t.textContent='Hors ligne';} }
+
+async function loadLive(){
+  setConn('demo');$('connTxt').textContent='Connexion…';
+  try{
+    if(!CFG.proxy) TOKEN=await getToken();
+    await fetchQueues();
+    DATA=await fetchContacts();
+    LIVE=true; setConn('live'); toast('Connecté — '+DATA.length+' tâches chargées','ok');
+  }catch(e){
+    LIVE=false; DATA=SNAPSHOT.slice(); setConn('demo');
+    if(CFG.proxy&&e.status===401){ toast("Code d'accès requis — saisissez-le dans Configuration",'info',4200); $('btnCfg').onclick(); }
+    else toast('API non joignable ('+e.message+') — bascule en mode démo','info',3800);
+  }
+  render();
+  $('lastUpd').textContent=new Date().toLocaleTimeString('fr-FR');
+}
+function loadDemo(){ LIVE=false; DATA=SNAPSHOT.slice(); setConn('demo'); render();
+  $('lastUpd').textContent=new Date().toLocaleTimeString('fr-FR'); toast('Mode démo activé','info'); }
+
+/* ---------- render ---------- */
+function fillFilters(){
+  const skills=[...new Set(DATA.map(d=>d.skill))].sort();
+  const cur=$('fSkill').value;
+  $('fSkill').innerHTML='<option value="">Toutes les compétences</option>'+skills.map(s=>`<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('');
+  const st=[...new Set(DATA.map(d=>d.status))];
+  const cs=$('fStatus').value;
+  $('fStatus').innerHTML='<option value="">Tous les statuts</option>'+st.map(s=>`<option ${s===cs?'selected':''}>${esc(s)}</option>`).join('');
+}
+function filtered(){
+  const q=$('q').value.toLowerCase().trim(), fs=$('fSkill').value, fst=$('fStatus').value, fp=$('fPrio').value, fa=$('fAging').value;
+  return DATA.filter(d=>{
+    if(CARD==='urgent'&&!(d.priority>700))return false;
+    if(CARD==='eleve'&&!(d.priority>0&&d.priority<=700))return false;
+    if(CARD==='agingmax'&&!agingMatchesMax(d))return false;
+    if(fs&&d.skill!==fs)return false;
+    if(fst&&d.status!==fst)return false;
+    if(fp){const p=d.priority; if(fp==='norm'&&p>0)return false; if(fp==='low'&&!(p>=1&&p<=300))return false;
+      if(fp==='mid'&&!(p>=301&&p<=700))return false; if(fp==='high'&&p<701)return false;}
+    if(fa){const ag=agingDays(d);
+      if(fa==='neg'){ if(!(ag!=null&&ag<0))return false; }
+      else { if(ag==null||ag<parseFloat(fa))return false; } }
+    if(q){const h=(d.customer+' '+d.skill+' '+d.id+' '+d.status).toLowerCase(); if(!h.includes(q))return false;}
+    return true;
+  });
+}
+function currentRows(){
+  const rows=filtered().slice();
+  const dir=SORT.dir==='asc'?1:-1;
+  rows.sort((a,b)=>{ let va=sortVal(a,SORT.key), vb=sortVal(b,SORT.key);
+    if(va==null&&vb==null)return 0; if(va==null)return 1; if(vb==null)return -1;
+    return (va<vb?-1:va>vb?1:0)*dir; });
+  return rows;
+}
+function renderKpis(){
+  const tot=DATA.length, hi=DATA.filter(d=>d.priority>700).length, mid=DATA.filter(d=>d.priority>0&&d.priority<=700).length;
+  const skills=new Set(DATA.map(d=>d.skill)).size;
+  const times=DATA.filter(d=>d.statusUpdatedAt&&d.createdAt).map(d=>(new Date(d.statusUpdatedAt)-new Date(d.createdAt))/1000);
+  const avg=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
+  const avgTxt=avg<60?avg+' sec':Math.round(avg/60)+' min';
+  const agings=DATA.map(agingDays).filter(v=>v!=null);
+  const maxAg=agings.length?Math.max(...agings):null;
+  const maxTxt=maxAg==null?'—':(maxAg<1?Math.round(maxAg*24)+' h':Math.round(maxAg)+' j');
+  const cards=[
+    ['Tâches (canal)',tot,CFG.channelName,'accent',null],
+    ['Priorité urgente',hi,'&gt; 700','hot','urgent'],
+    ['Priorité élevée',mid,'1 – 700','warn','eleve'],
+    ['Compétences',skills,'files distinctes','',null],
+    ['Aging max',maxTxt,'= '+maxTxt,'warn','agingmax'],
+    ['Temps moyen résol.',avgTxt,'sur '+times.length+' tâches','',null]
+  ];
+  $('kpis').innerHTML=cards.map(c=>{
+    const clk=c[4]?(' clickable'+(CARD===c[4]?' active':'')):'';
+    const dc=c[4]?(' data-card="'+c[4]+'" title="Cliquer pour filtrer"'):'';
+    return `<div class="kpi ${c[3]}${clk}"${dc}><div class="lbl">${c[0]}</div><div class="val">${c[1]}</div><div class="sub">${c[2]}</div></div>`;
+  }).join('');
+  document.querySelectorAll('.kpi[data-card]').forEach(el=>el.onclick=()=>toggleCard(el.dataset.card));
+}
+function renderSortCarets(){
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    const act=th.dataset.sort===SORT.key; th.classList.toggle('act',act);
+    const car=th.querySelector('.car'); if(car)car.textContent=act?(SORT.dir==='asc'?'▲':'▼'):'↕';
+  });
+}
+function render(){
+  fillFilters(); renderKpis();
+  const rows=currentRows();
+  $('countTxt').textContent=rows.length+' / '+DATA.length+' tâche(s) affichée(s)';
+  renderSortCarets();
+  if(!rows.length){$('rows').innerHTML='<tr><td colspan="11"><div class="empty">Aucune tâche ne correspond aux filtres.</div></td></tr>';syncBulk();return;}
+  $('rows').innerHTML=rows.map(d=>{
+    const [cls,lbl,col]=prioTier(d.priority); const pct=Math.min(100,Math.round(d.priority/(d.maxPriority||1000)*100));
+    const [dd,tt]=fmtDate(d.createdAt); const sc=SELECTED.has(d.id)?'sel':'';
+    const [ad,at]=fmtActivation(d.activation); const [agTxt,agCls]=fmtAging(d);
+    return `<tr data-id="${d.id}" class="${sc}">
+      <td><input type="checkbox" class="rowchk" data-id="${d.id}" ${SELECTED.has(d.id)?'checked':''}></td>
+      <td><div class="type-ic" title="Tâche entrante">💬</div></td>
+      <td class="cust">${esc(d.customer)}</td>
+      <td><div class="skill" title="${esc(d.skill)}">${esc(d.skill)}</div></td>
+      <td class="ch">${esc(d.channel)}</td>
+      <td>${statusCell(d)}</td>
+      <td class="date">${dd} <small>${tt}</small></td>
+      <td class="date">${ad} <small>${at}</small></td>
+      <td><span class="aging ${agCls}">${agTxt}</span></td>
+      <td class="res">${resTime(d.createdAt,d.statusUpdatedAt)}</td>
+      <td>
+        <div class="prio-wrap" data-id="${d.id}">
+          <div class="prio-view" data-id="${d.id}" title="Cliquer pour modifier la priorité" style="cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:space-between">
+            <div class="prio-top"><span class="pbadge ${cls}">${lbl}</span><span class="pval">${d.priority}</span></div>
+            <button class="icon-btn btn-editprio" data-id="${d.id}" title="Modifier la priorité">✎</button>
+          </div>
+          <div class="pbar"><i style="width:${pct}%;background:${col}"></i></div>
+          <div class="prio-edit" data-id="${d.id}">
+            <input type="number" min="0" max="${d.maxPriority||1000}" value="${d.priority}" class="prio-input" data-id="${d.id}">
+            <button class="icon-btn btn-saveprio" data-id="${d.id}" title="Enregistrer" style="border-color:var(--violet);color:var(--violet-d)">✔</button>
+            <button class="icon-btn btn-cancelprio" data-id="${d.id}" title="Annuler">✕</button>
+          </div>
+        </div>
+      </td></tr>`;
+  }).join('');
+  bindRows(); syncBulk();
+}
+function bindRows(){
+  document.querySelectorAll('.rowchk').forEach(cb=>cb.onchange=()=>{ const id=cb.dataset.id;
+    cb.checked?SELECTED.add(id):SELECTED.delete(id); cb.closest('tr').classList.toggle('sel',cb.checked); syncBulk(); });
+  document.querySelectorAll('.btn-editprio').forEach(b=>b.onclick=()=>toggleEdit(b.dataset.id,true));
+  document.querySelectorAll('.btn-cancelprio').forEach(b=>b.onclick=()=>toggleEdit(b.dataset.id,false));
+  document.querySelectorAll('.btn-saveprio').forEach(b=>b.onclick=()=>saveOne(b.dataset.id));
+  document.querySelectorAll('.prio-view').forEach(v=>v.onclick=(e)=>{ if(e.target.closest('.btn-editprio'))return; toggleEdit(v.dataset.id,true); });
+  document.querySelectorAll('.prio-input').forEach(inp=>inp.onkeydown=(e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); saveOne(inp.dataset.id); }
+    else if(e.key==='Escape'){ e.preventDefault(); toggleEdit(inp.dataset.id,false); } });
+  document.querySelectorAll('.statusSel').forEach(sel=>sel.onchange=()=>onStatusSelect(sel));
+}
+function toggleEdit(id,on){ const w=document.querySelector(`.prio-wrap[data-id="${id}"]`); if(!w)return;
+  w.querySelector('.prio-view').style.display=on?'none':'flex';
+  w.querySelector('.prio-edit').style.display=on?'flex':'none';
+  if(on)w.querySelector('.prio-input').focus(); }
+
+/* ---------- priority writes ---------- */
+async function commit(id,prio){
+  const rec=DATA.find(d=>d.id===id); if(!rec)return;
+  if(LIVE){ await updatePriority(id,prio); }
+  rec.priority=prio;
+}
+async function saveOne(id){
+  const w=document.querySelector(`.prio-wrap[data-id="${id}"]`);
+  let v=parseInt(w.querySelector('.prio-input').value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(1000,v));
+  const tr=w.closest('tr'); tr.classList.add('row-saving');
+  try{ await commit(id,v); toast('Priorité mise à jour → '+v+(LIVE?'':' (démo)'),'ok'); render(); }
+  catch(e){ toast('Échec de la mise à jour : '+e.message,'err'); tr.classList.remove('row-saving'); }
+}
+async function bulkApply(prio,filterFn){
+  let ids;
+  if(filterFn){ ids=filtered().filter(filterFn).map(d=>d.id); }
+  else { ids=[...SELECTED]; }
+  if(!ids.length){ toast('Aucune tâche ciblée','info'); return; }
+  const tid=document.createElement('div'); tid.className='toast info';
+  tid.innerHTML='<span class="spin"></span> Mise à jour de '+ids.length+' tâche(s)…'; $('toasts').appendChild(tid);
+  let ok=0,fail=0;
+  for(const id of ids){ try{ await commit(id,prio); ok++; }catch(e){ fail++; } }
+  tid.remove();
+  toast('✔ '+ok+' mise(s) à jour'+(fail?(' · '+fail+' échec(s)'):'')+(LIVE?'':' (démo)'), fail?'err':'ok', 3200);
+  SELECTED.clear(); render();
+}
+$('btnApply').onclick=()=>bulkApply(parseInt($('prioNum').value,10)||0,null);
+document.querySelectorAll('.chip[data-rule]').forEach(c=>c.onclick=()=>{
+  const r=c.dataset.rule;
+  if(r==='sinistre')bulkApply(900,d=>/SINISTRE|DECLA/i.test(d.skill));
+  else if(r==='gest')bulkApply(500,d=>/GEST/i.test(d.skill));
+  else if(r==='reset')bulkApply(0,d=>true);
+});
+
+/* ---------- status writes ---------- */
+async function onStatusSelect(sel){
+  const id=sel.dataset.id, cur=sel.dataset.cur, target=sel.value;
+  if(target===cur){ return; }
+  if(DESTRUCTIVE.has(target)){
+    const ok=await confirmModal(
+      target==='trashed'?'Mettre à la corbeille ?':"Clôturer l'interaction ?",
+      target==='trashed'?"L'interaction sera déplacée vers la corbeille CXone.":"Une interaction clôturée ne peut pas être rouverte via l'API CXone.",
+      target==='trashed'?'Corbeille':'Clôturer', true);
+    if(!ok){ sel.value=cur; return; }
+  }
+  const tr=sel.closest('tr'); if(tr)tr.classList.add('row-saving');
+  try{
+    if(LIVE) await changeStatus(id,target);
+    const rec=DATA.find(d=>d.id===id);
+    if(rec){ rec.status=target; if(target==='closed'||target==='resolved') rec.statusUpdatedAt=new Date().toISOString(); }
+    toast('Statut → '+(STATUS_LABEL[target]||target)+(LIVE?'':' (démo)'),'ok');
+    render();
+  }catch(e){
+    toast('Refusé : '+e.message,'err',4200);
+    sel.value=cur; if(tr)tr.classList.remove('row-saving');
+  }
+}
+async function bulkStatus(target){
+  const ids=[...SELECTED]; if(!ids.length){ toast('Aucune tâche sélectionnée','info'); return; }
+  if(DESTRUCTIVE.has(target)){
+    const ok=await confirmModal(
+      target==='trashed'?'Mettre '+ids.length+' tâche(s) à la corbeille ?':'Clôturer '+ids.length+' tâche(s) ?',
+      target==='trashed'?'Action appliquée à toute la sélection.':"Les interactions clôturées ne peuvent pas être rouvertes via l'API CXone.",
+      target==='trashed'?'Corbeille':'Clôturer', true);
+    if(!ok) return;
+  }
+  const tid=document.createElement('div'); tid.className='toast info';
+  tid.innerHTML='<span class="spin"></span> Mise à jour du statut de '+ids.length+' tâche(s)…'; $('toasts').appendChild(tid);
+  let ok=0,fail=0,lastErr='';
+  for(const id of ids){
+    try{ if(LIVE) await changeStatus(id,target);
+      const rec=DATA.find(d=>d.id===id); if(rec){ rec.status=target; if(target==='closed'||target==='resolved') rec.statusUpdatedAt=new Date().toISOString(); }
+      ok++;
+    }catch(e){ fail++; lastErr=e.message; }
+  }
+  tid.remove();
+  toast('✔ '+ok+' statut(s) modifié(s)'+(fail?(' · '+fail+' refusé(s) : '+lastErr):'')+(LIVE?'':' (démo)'), fail?'err':'ok', 4200);
+  SELECTED.clear(); render();
+}
+$('btnBulkStatus').onclick=()=>bulkStatus($('bulkStatus').value);
+function syncBulk(){ $('selN').textContent=SELECTED.size; $('bulk').classList.toggle('show',SELECTED.size>0);
+  const shown=filtered(); const all=shown.length&&shown.every(d=>SELECTED.has(d.id)); $('chkAll').checked=all; }
+$('chkAll').onchange=()=>{ const on=$('chkAll').checked; filtered().forEach(d=>on?SELECTED.add(d.id):SELECTED.delete(d.id)); render(); };
+
+/* ---------- filters ---------- */
+['q','fSkill','fStatus','fPrio','fAging'].forEach(id=>$(id).addEventListener('input',()=>{CARD='';render();}));
+document.querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.sort;
+  if(SORT.key===k){ SORT.dir=SORT.dir==='asc'?'desc':'asc'; } else { SORT.key=k; SORT.dir=(k==='createdAt'||k==='activation'||k==='priority'||k==='aging')?'desc':'asc'; }
+  render();
+});
+$('btnOldest').onclick=()=>{ SORT={key:'aging',dir:'desc'}; render(); toast('Trié par ancienneté (Aging) décroissante','info'); };
+
+/* ---------- config drawer ---------- */
+function openCfg(o){ $('drawer').classList.toggle('show',o); $('drawerBg').classList.toggle('show',o); }
+$('btnCfg').onclick=()=>{
+  $('cfgDirect').style.display=CFG.proxy?'none':''; $('cfgProxy').style.display=CFG.proxy?'':'none';
+  if(CFG.proxy){ $('cfgKey').value=APPKEY; openCfg(true); setTimeout(()=>$('cfgKey').focus(),250); return; }
+  $('cfgTokenUrl').value=CFG.tokenUrl;$('cfgApiBase').value=CFG.apiBase;$('cfgChannel').value=CFG.channel;
+  $('cfgAk').value=CFG.ak;$('cfgSk').value=CFG.sk;$('cfgCid').value=CFG.cid;$('cfgCs').value=CFG.cs; openCfg(true); };
+$('cfgKey').onkeydown=e=>{ if(e.key==='Enter')$('btnConnect').onclick(); };
+$('btnCloseCfg').onclick=()=>openCfg(false); $('drawerBg').onclick=()=>openCfg(false);
+$('btnConnect').onclick=()=>{
+  if(CFG.proxy){ APPKEY=$('cfgKey').value.trim(); try{ sessionStorage.setItem('matmutAppKey',APPKEY); }catch(e){} openCfg(false); loadLive(); return; }
+  TOKEN=null; CFG.tokenUrl=$('cfgTokenUrl').value;CFG.apiBase=$('cfgApiBase').value;CFG.channel=$('cfgChannel').value;
+  CFG.ak=$('cfgAk').value;CFG.sk=$('cfgSk').value;CFG.cid=$('cfgCid').value;CFG.cs=$('cfgCs').value; openCfg(false); loadLive(); };
+$('btnDemo').onclick=()=>{ openCfg(false); loadDemo(); };
+$('btnRefresh').onclick=()=>loadLive();
+
+/* ---------- init ---------- */
+loadLive();
+</script>
+</body>
+</html>
